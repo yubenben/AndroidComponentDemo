@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="titles">
+        <item>Android Text</item>
+        <item>Android UI</item>
+        <item>Android Widget</item>
+        <item>Android adapter</item>
+        <item>Android activity</item>
+    </array>
+</resources>
