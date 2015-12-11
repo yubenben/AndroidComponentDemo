@@ -1,6 +1,8 @@
 package com.ran.ben.androidcomponentdemo.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,18 +12,30 @@ import android.widget.TextView;
 
 import com.ran.ben.androidcomponentdemo.R;
 
+import java.util.ArrayList;
+
 /**
  * Created by yubenben on 15-12-11.
  */
 public class AllActivityViewAdapter extends RecyclerView.Adapter<AllActivityViewAdapter.NormalTextViewHolder> {
     private final LayoutInflater mLayoutInflater;
     private final Context mContext;
-    private String[] mTitles;
+    private ArrayList<ActivityModel> activityModels;
 
     public AllActivityViewAdapter(Context context) {
-        mTitles = context.getResources().getStringArray(R.array.titles);
         mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
+        activityModels = new ArrayList<>();
+        String[] mTitles = context.getResources().getStringArray(R.array.titles);
+
+        for(String text : mTitles) {
+            try {
+                activityModels.add(new ActivityModel(text,
+                        (Class<? extends Activity>) Class.forName("com.ran.ben.androidcomponentdemo.activity." + text)));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -30,13 +44,20 @@ public class AllActivityViewAdapter extends RecyclerView.Adapter<AllActivityView
     }
 
     @Override
-    public void onBindViewHolder(NormalTextViewHolder holder, int position) {
-        holder.mTextView.setText(mTitles[position]);
+    public void onBindViewHolder(NormalTextViewHolder holder, final int position) {
+        holder.mTextView.setText(activityModels.get(position).getTitle());
+        holder.mTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mContext.startActivity(new Intent(mContext, activityModels.get(
+                        position).getActivityClass()));
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return mTitles == null ? 0 : mTitles.length;
+        return activityModels == null ? 0 : activityModels.size();
     }
 
     public static class NormalTextViewHolder extends RecyclerView.ViewHolder {
@@ -45,12 +66,29 @@ public class AllActivityViewAdapter extends RecyclerView.Adapter<AllActivityView
         NormalTextViewHolder(View view) {
             super(view);
             mTextView = (TextView) view.findViewById(R.id.text_view);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d("NormalTextViewHolder", "onClick--> position = " + getPosition());
-                }
-            });
+
         }
+    }
+
+
+    private class ActivityModel {
+
+        private String title;
+        private Class<? extends Activity> activityClass;
+
+        public ActivityModel(String title,
+                             Class<? extends Activity> activityClass) {
+            this.title = title;
+            this.activityClass = activityClass;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public Class<? extends Activity> getActivityClass() {
+            return activityClass;
+        }
+
     }
 }
