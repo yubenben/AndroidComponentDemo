@@ -17,7 +17,7 @@ import android.view.MenuItem;
 
 import com.ran.ben.androidcomponentdemo.R;
 
-import adapter.AllActivityViewAdapter;
+import com.ran.ben.androidcomponentdemo.adapter.AllActivityViewAdapter;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
