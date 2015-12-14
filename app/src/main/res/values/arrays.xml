@@ -2,7 +2,7 @@
 <resources>
     <array name="titles">
         <item>HeartActivity</item>
-        <item>Android UI</item>
+        <item>LeafLoadingActivity</item>
         <item>Android Widget</item>
         <item>Android adapter</item>
         <item>Android activity</item>
