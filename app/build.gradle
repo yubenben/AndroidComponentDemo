@@ -26,4 +26,10 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:cardview-v7:21.0.3'
     compile 'com.android.support:recyclerview-v7:21.0.3'
+
+    // 适配5.0的涟漪效果, 这个最低版本为14，如果需要适配到10以前，需要源码级别修改
+    compile 'com.balysv:material-ripple:1.0.2'
+
+    // 5.0风格的dialog
+    //compile 'com.afollestad:material-dialogs:0.7.4.2'
 }
