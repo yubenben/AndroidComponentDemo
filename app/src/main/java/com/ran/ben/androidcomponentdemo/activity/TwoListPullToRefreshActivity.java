@@ -92,7 +92,7 @@ public class TwoListPullToRefreshActivity extends FragmentActivity
 
         mOneListView = (ListView) findViewById(R.id.one_list);
         ViewGroup.LayoutParams params = mOneListView.getLayoutParams();
-        params.height = DensityUtil.gettDisplayHeight(this) / 3;
+        params.height = DensityUtil.gettDisplayHeight(this);
         mOneListView.setOnItemClickListener(this);
         mTwoListView = (ListView) findViewById(R.id.two_list);
         ViewGroup.LayoutParams params2 = mTwoListView.getLayoutParams();

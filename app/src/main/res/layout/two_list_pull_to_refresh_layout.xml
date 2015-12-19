@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:descendantFocusability="blocksDescendants">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -84,42 +84,46 @@
         </LinearLayout>
 
         <View
+            android:id="@+id/div_line"
+            android:layout_below="@id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/gray_line">
 
         </View>
 
-        <RelativeLayout
+        <!-- <RelativeLayout
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">-->
+
+        <com.ran.ben.androidcomponentdemo.view.custom.ZZListView
+            android:id="@+id/one_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_below="@id/div_line"
+            android:background="@android:color/white"
+            android:descendantFocusability="blocksDescendants"
+            android:divider="@color/gray_line"
+            android:listSelector="@android:color/darker_gray"
+            android:visibility="gone">
 
-            <com.ran.ben.androidcomponentdemo.view.custom.ZZListView
-                android:id="@+id/one_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/white"
-                android:descendantFocusability="blocksDescendants"
-                android:divider="@color/gray_line"
-                android:listSelector="@android:color/darker_gray"
-                android:visibility="gone">
+        </com.ran.ben.androidcomponentdemo.view.custom.ZZListView>
 
-            </com.ran.ben.androidcomponentdemo.view.custom.ZZListView>
+        <com.ran.ben.androidcomponentdemo.view.custom.ZZListView
+            android:id="@+id/two_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/div_line"
+            android:background="@android:color/white"
+            android:descendantFocusability="blocksDescendants"
+            android:divider="@color/gray_line"
+            android:listSelector="@android:color/darker_gray"
+            android:visibility="gone">
 
-            <com.ran.ben.androidcomponentdemo.view.custom.ZZListView
-                android:id="@+id/two_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/white"
-                android:descendantFocusability="blocksDescendants"
-                android:divider="@color/gray_line"
-                android:listSelector="@android:color/darker_gray"
-                android:visibility="gone">
+        </com.ran.ben.androidcomponentdemo.view.custom.ZZListView>
 
-            </com.ran.ben.androidcomponentdemo.view.custom.ZZListView>
+        <!--</RelativeLayout>-->
 
-        </RelativeLayout>
-
-    </LinearLayout>
+    </RelativeLayout>
 
 </com.ran.ben.androidcomponentdemo.view.custom.ZZPullToRefreshScrollView>
