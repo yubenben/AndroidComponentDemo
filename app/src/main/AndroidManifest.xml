@@ -24,6 +24,10 @@
         <activity
             android:name=".activity.PullToRefreshScrollViewActivity" >
         </activity>
+        <activity
+            android:name=".activity.TwoListPullToRefreshActivity"
+            android:theme="@style/AppTheme">
+        </activity>
 
     </application>
 

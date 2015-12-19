@@ -36,7 +36,7 @@ public class DensityUtil {
         return width;
     }
 
-    public static int gettDisplayHight(Context ctx){
+    public static int gettDisplayHeight(Context ctx){
         DisplayMetrics metric = new DisplayMetrics();
         WindowManager winManager = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
         winManager.getDefaultDisplay().getMetrics(metric);

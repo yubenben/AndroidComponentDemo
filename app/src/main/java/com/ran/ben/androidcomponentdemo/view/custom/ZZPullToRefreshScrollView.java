@@ -20,10 +20,13 @@ import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.handmark.pulltorefresh.library.OverscrollHelper;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.Utils.ScrollUtil;
+import com.handmark.pulltorefresh.library.internal.Utils;
 import com.ran.ben.androidcomponentdemo.R;
 
 public class ZZPullToRefreshScrollView extends PullToRefreshBase<ZZScrollView> {
@@ -126,5 +129,25 @@ public class ZZPullToRefreshScrollView extends PullToRefreshBase<ZZScrollView> {
 
     public interface OnScrollChangedListener{
         void onScrollChanged(int l, int t, int oldl, int oldt);
+    }
+
+    private float mLastMotionY;
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+        float x = event.getX();
+        float y = event.getY();
+        float dy = y - mLastMotionY;
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                mLastMotionY = y;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (ScrollUtil.canScroll(this, false, (int) dy, (int) x, (int) y)) {
+                    mLastMotionY = y;
+                    return false;
+                }
+                break;
+        }
+        return super.onInterceptTouchEvent(event);
     }
 }
