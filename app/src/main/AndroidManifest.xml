@@ -21,6 +21,9 @@
 
         <activity android:name=".activity.HeartActivity" />
         <activity android:name=".activity.LeafLoadingActivity" />
+        <activity
+            android:name=".activity.PullToRefreshScrollViewActivity" >
+        </activity>
 
     </application>
 

@@ -3,7 +3,7 @@
     <array name="titles">
         <item>HeartActivity</item>
         <item>LeafLoadingActivity</item>
-        <item>Android Widget</item>
+        <item>PullToRefreshScrollViewActivity</item>
         <item>Android adapter</item>
         <item>Android activity</item>
         <item>Android Text</item>
