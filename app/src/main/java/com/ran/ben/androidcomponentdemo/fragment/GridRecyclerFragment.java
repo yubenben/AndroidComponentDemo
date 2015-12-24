@@ -10,14 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ran.ben.androidcomponentdemo.R;
-import com.ran.ben.androidcomponentdemo.adapter.LoadAdapter;
+import com.ran.ben.androidcomponentdemo.adapter.LoadMoreRecyclerAdapter;
 import com.ran.ben.androidcomponentdemo.refresh.OnRecycleViewScrollListener;
 
 import java.util.ArrayList;
 
 public class GridRecyclerFragment extends Fragment {
     private RecyclerView recyclerView;
-    private LoadAdapter adapter;
+    private LoadMoreRecyclerAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -31,7 +31,7 @@ public class GridRecyclerFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new LoadAdapter();
+        adapter = new LoadMoreRecyclerAdapter();
         recyclerView.setAdapter(adapter);
         adapter.setHasMoreData(true);
         recyclerView.addOnScrollListener(new OnRecycleViewScrollListener() {
@@ -62,6 +62,8 @@ public class GridRecyclerFragment extends Fragment {
 
 
     public void refresh() {
+        adapter.getList().clear();
+        adapter.notifyDataSetChanged();
         adapter.showHeader();
         recyclerView.postDelayed(new Runnable() {
             @Override
@@ -70,7 +72,7 @@ public class GridRecyclerFragment extends Fragment {
                 for (int i = 0; i < 10; i++) {
                     dataList.add("Item " + (i + 1));
                 }
-                adapter.getList().clear();
+
                 adapter.appendToList(dataList);
                 adapter.hideHeader();
             }

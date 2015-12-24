@@ -10,9 +10,9 @@ import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.refresh.BaseLoadMoreRecyclerAdapter;
 
 
-public class LoadAdapter extends BaseLoadMoreRecyclerAdapter<String, LoadAdapter.ViewHolder> {
+public class LoadMoreRecyclerAdapter extends BaseLoadMoreRecyclerAdapter<String, LoadMoreRecyclerAdapter.ViewHolder> {
 
-    public LoadAdapter() {
+    public LoadMoreRecyclerAdapter() {
      }
 
     @Override

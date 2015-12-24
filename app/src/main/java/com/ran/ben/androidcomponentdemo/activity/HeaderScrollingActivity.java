@@ -1,9 +1,12 @@
 package com.ran.ben.androidcomponentdemo.activity;
 
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -17,7 +20,9 @@ import com.ran.ben.androidcomponentdemo.fragment.LinearRecyclerFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HeaderScrollingActivity extends AppCompatActivity {
+public class HeaderScrollingActivity extends AppCompatActivity
+        implements SwipeRefreshLayout.OnRefreshListener,
+        AppBarLayout.OnOffsetChangedListener {
 
     private TabLayout mTabLayout;
 
@@ -30,6 +35,9 @@ public class HeaderScrollingActivity extends AppCompatActivity {
     private ViewPager mHeadViewPager;
     private HeadViewAdapter mHeadViewAdapter;
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private AppBarLayout appBarLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,10 +46,18 @@ public class HeaderScrollingActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //set the toolbar min height
-//        int toolbar_hight = PlatformUtils.getToolbarHeight(this) * 2;
+//        int toolbar_height = PlatformUtils.getToolbarHeight(this) * 2;
 //        CollapsingToolbarLayout.LayoutParams params = (CollapsingToolbarLayout.LayoutParams) toolbar.getLayoutParams();
 //        params.height = toolbar_hight;
 //        toolbar.setLayoutParams(params);
+
+        appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
+        appBarLayout.addOnOffsetChangedListener(this);
+
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        mSwipeRefreshLayout.setProgressViewOffset(false, 0, 100);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 
         mTabLayout = (TabLayout) findViewById(R.id.tab_layout);
 
@@ -75,5 +91,37 @@ public class HeaderScrollingActivity extends AppCompatActivity {
         headList.add("1111");
         mHeadViewAdapter.setmLists(headList);
         mHeadViewPager.setAdapter(mHeadViewAdapter);
+    }
+
+    @Override
+    public void onRefresh() {
+        if(mViewPager.getCurrentItem() == 0) {
+            mLinearRecyclerFragment.refresh();
+        } else if (mViewPager.getCurrentItem() == 2) {
+            mGridRecyclerFragment.refresh();
+        }
+        mSwipeRefreshLayout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        }, 1000);
+    }
+
+    @Override
+    public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+        mSwipeRefreshLayout.setEnabled(verticalOffset== 0);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        appBarLayout.addOnOffsetChangedListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        appBarLayout.removeOnOffsetChangedListener(this);
     }
 }

@@ -2,7 +2,6 @@ package com.ran.ben.androidcomponentdemo.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,14 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ran.ben.androidcomponentdemo.R;
-import com.ran.ben.androidcomponentdemo.adapter.LoadAdapter;
+import com.ran.ben.androidcomponentdemo.adapter.LoadMoreRecyclerAdapter;
 import com.ran.ben.androidcomponentdemo.refresh.OnRecycleViewScrollListener;
 
 import java.util.ArrayList;
 
 public class LinearRecyclerFragment extends Fragment {
     private RecyclerView recyclerView;
-    private LoadAdapter adapter;
+    private LoadMoreRecyclerAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -31,7 +30,7 @@ public class LinearRecyclerFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new LoadAdapter();
+        adapter = new LoadMoreRecyclerAdapter();
         recyclerView.setAdapter(adapter);
         adapter.setHasMoreData(true);
         recyclerView.addOnScrollListener(new OnRecycleViewScrollListener() {
@@ -62,6 +61,8 @@ public class LinearRecyclerFragment extends Fragment {
 
 
     public void refresh() {
+        adapter.getList().clear();
+        adapter.notifyDataSetChanged();
         adapter.showHeader();
         recyclerView.postDelayed(new Runnable() {
             @Override
@@ -70,7 +71,7 @@ public class LinearRecyclerFragment extends Fragment {
                 for (int i = 0; i < 10; i++) {
                     dataList.add("Item " + (i + 1));
                 }
-                adapter.getList().clear();
+
                 adapter.appendToList(dataList);
                 adapter.hideHeader();
             }
