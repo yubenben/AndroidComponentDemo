@@ -34,4 +34,10 @@ dependencies {
     // 5.0风格的dialog
     //compile 'com.afollestad:material-dialogs:0.7.4.2'
 
+    compile 'com.facebook.fresco:fresco:0.6.0+'
+    compile 'com.facebook.fresco:drawee:0.6.0+'
+    compile 'com.facebook.fresco:drawee-volley:0.6.0+'
+    compile 'com.facebook.fresco:fbcore:0.6.0+'
+    compile 'com.facebook.fresco:imagepipeline:0.6.0+'
+    compile 'com.facebook.fresco:imagepipeline-okhttp:0.6.0'
 }

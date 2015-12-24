@@ -2,6 +2,7 @@ package com.ran.ben.androidcomponentdemo.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,7 +15,7 @@ import com.ran.ben.androidcomponentdemo.refresh.OnRecycleViewScrollListener;
 
 import java.util.ArrayList;
 
-public class RecyclerFragment extends Fragment {
+public class LinearRecyclerFragment extends Fragment {
     private RecyclerView recyclerView;
     private LoadAdapter adapter;
 
