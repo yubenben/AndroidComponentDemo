@@ -9,6 +9,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Environment;
 import android.provider.Settings.Secure;
@@ -18,6 +19,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.ran.ben.androidcomponentdemo.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -295,5 +298,14 @@ public class PlatformUtils {
         }
 
         return versionCode;
+    }
+
+    public static int getToolbarHeight(Context context) {
+        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
+                new int[]{R.attr.actionBarSize});
+        int toolbarHeight = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
+
+        return toolbarHeight;
     }
 }
