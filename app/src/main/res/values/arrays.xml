@@ -5,8 +5,8 @@
         <item>LeafLoadingActivity</item>
         <item>PullToRefreshScrollViewActivity</item>
         <item>TwoListPullToRefreshActivity</item>
-        <item>Android activity</item>
-        <item>Android Text</item>
+        <item>ScrollingActivity</item>
+        <item>HeaderScrollingActivity</item>
         <item>Android UI</item>
         <item>Android Widget</item>
         <item>Android adapter</item>
