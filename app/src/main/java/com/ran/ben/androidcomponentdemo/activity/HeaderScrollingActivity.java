@@ -71,6 +71,7 @@ public class HeaderScrollingActivity extends AppCompatActivity
         mTabLayout.addTab(mTabLayout.newTab().setText(titles.get(2)));
 
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
+        mViewPager.setOffscreenPageLimit(3);
 
         List<Fragment> fragments = new ArrayList<>();
         mLinearRecyclerFragment = new LinearRecyclerFragment();
