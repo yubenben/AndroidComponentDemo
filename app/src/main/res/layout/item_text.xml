@@ -6,11 +6,13 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     android:id="@+id/cv_item"
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    card_view:contentPadding="20dp"
     card_view:cardCornerRadius="4dp">
 
     <TextView
         android:id="@+id/text_view"
-        android:padding="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/app_name" />
