@@ -33,7 +33,8 @@
             android:layout_centerVertical="true"
             android:layout_alignRight="@id/leaf_loading"
             android:layout_marginRight="5dp"
-            android:src="@drawable/fengshan" />
+            android:src="@drawable/fengshan"
+            android:contentDescription="@null" />
     </RelativeLayout>
 
     <ScrollView
@@ -42,7 +43,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical" >
 
             <LinearLayout
@@ -59,13 +60,14 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:textColor="#ffffa800"
-                    android:textSize="15dp" />
+                    android:textSize="15sp" />
 
                 <SeekBar
                     android:id="@+id/seekBar_ampair"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
                     android:layout_weight="1" />
             </LinearLayout>
 
@@ -83,13 +85,14 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:textColor="#ffffa800"
-                    android:textSize="15dp" />
+                    android:textSize="15sp" />
 
                 <SeekBar
                     android:id="@+id/seekBar_distance"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
                     android:layout_weight="1" />
             </LinearLayout>
 
@@ -107,13 +110,14 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:textColor="#ffffa800"
-                    android:textSize="15dp" />
+                    android:textSize="15sp" />
 
                 <SeekBar
                     android:id="@+id/seekBar_float_time"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
                     android:layout_weight="1" />
             </LinearLayout>
 
@@ -131,13 +135,14 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:textColor="#ffffa800"
-                    android:textSize="15dp" />
+                    android:textSize="15sp" />
 
                 <SeekBar
                     android:id="@+id/seekBar_rotate_time"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
                     android:layout_weight="1" />
             </LinearLayout>
 
@@ -147,7 +152,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:text="去除进度条,玩转弧线"
-                android:textSize="18dp" />
+                android:textSize="18sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -162,7 +167,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="增加进度: "
-                    android:textSize="18dp" />
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/text_progress"
@@ -170,7 +175,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:textColor="#ffffa800"
-                    android:textSize="15dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

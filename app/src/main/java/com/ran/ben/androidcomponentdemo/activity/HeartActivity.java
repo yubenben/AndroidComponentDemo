@@ -1,6 +1,7 @@
 
 package com.ran.ben.androidcomponentdemo.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +13,7 @@ import com.ran.ben.androidcomponentdemo.view.DynamicHeartView;
 
 public class HeartActivity extends Activity {
 
+    @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -23,7 +25,7 @@ public class HeartActivity extends Activity {
                 default:
                     break;
             }
-        };
+        }
     };
     private static final int START_ANIM = 0;
     private DynamicHeartView mView;

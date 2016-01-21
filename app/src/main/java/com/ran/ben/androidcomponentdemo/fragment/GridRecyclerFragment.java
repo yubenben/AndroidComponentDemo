@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.adapter.LoadMoreRecyclerAdapter;
 import com.ran.ben.androidcomponentdemo.refresh.OnRecycleViewScrollListener;
+import com.ran.ben.androidcomponentdemo.view.custom.DividerGridItemDecoration;
 
 import java.util.ArrayList;
 
@@ -31,6 +32,7 @@ public class GridRecyclerFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addItemDecoration(new DividerGridItemDecoration(getContext()));
         adapter = new LoadMoreRecyclerAdapter();
         recyclerView.setAdapter(adapter);
         adapter.setHasMoreData(true);

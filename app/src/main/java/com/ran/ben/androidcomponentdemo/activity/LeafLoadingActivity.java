@@ -1,6 +1,7 @@
 
 package com.ran.ben.androidcomponentdemo.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +25,7 @@ import java.util.Random;
 public class LeafLoadingActivity extends Activity implements OnSeekBarChangeListener,
         OnClickListener {
 
+    @SuppressLint("HandlerLeak")
     Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
