@@ -15,11 +15,18 @@
         <com.facebook.drawee.view.SimpleDraweeView
             xmlns:fresco="http://schemas.android.com/apk/res-auto"
             android:id="@+id/card_image_view"
-            android:layout_width="match_parent"
-            android:layout_height="260dp"
-            fresco:placeholderImageScaleType="centerInside"
-            fresco:failureImageScaleType="center"
-            fresco:actualImageScaleType="focusCrop"/>
+            android:layout_width="320dp"
+            android:layout_height="320dp"
+            fresco:actualImageScaleType="centerCrop"
+            fresco:failureImageScaleType="centerCrop"
+            fresco:placeholderImageScaleType="centerCrop"
+            fresco:placeholderImage="@drawable/picture_loading"
+            fresco:roundBottomLeft="false"
+            fresco:roundBottomRight="false"
+            fresco:roundedCornerRadius="5dp"
+            fresco:roundingBorderColor="#C8CCCC"
+            fresco:roundingBorderWidth="1sp"
+            />
 
         <TextView
             android:id="@+id/card_pic_num"

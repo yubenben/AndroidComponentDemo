@@ -121,7 +121,7 @@ public class CardSlidePanel extends ViewGroup {
             } else {
                 CardItemView viewItem = (CardItemView) childView;
                 viewItem.setTag(i + 1);
-                viewItem.imageView.setOnClickListener(btnListener);
+                viewItem.mImageView.setOnClickListener(btnListener);
                 viewList.add(viewItem);
             }
         }
@@ -232,7 +232,7 @@ public class CardSlidePanel extends ViewGroup {
             changedView.setScaleX(scale);
             changedView.setScaleY(scale);
             //add by yubenben for rotation back
-            changedView.setRotation(0);
+            //changedView.setRotation(0);
 
             // 2. 卡片View在ViewGroup中的顺次调整
             int num = viewList.size();
@@ -294,8 +294,8 @@ public class CardSlidePanel extends ViewGroup {
         ajustLinkageViewItem(changedView, rate2, 2);
 
         //add by yubenben for rotation
-        float rotation = (30 * (float)changeViewLeft / getWidth());
-        changedView.setRotation(rotation < 40 ? rotation : 40);
+        //float rotation = (30 * (float)changeViewLeft / getWidth());
+        //changedView.setRotation(rotation < 40 ? rotation : 40);
     }
 
     // 由index对应view变成index-1对应的view
