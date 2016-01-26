@@ -11,6 +11,8 @@ public class CardDataItem {
     public int likeNum;
     public int imageNum;
 
+    private int type;
+
     @Override
     public String toString() {
         return "CardDataItem{" +
@@ -19,5 +21,13 @@ public class CardDataItem {
                 ", likeNum=" + likeNum +
                 ", imageNum=" + imageNum +
                 '}';
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

@@ -24,8 +24,8 @@
             fresco:roundBottomLeft="false"
             fresco:roundBottomRight="false"
             fresco:roundedCornerRadius="5dp"
-            fresco:roundingBorderColor="#C8CCCC"
-            fresco:roundingBorderWidth="1sp"
+            fresco:roundingBorderColor="#cccccc"
+            fresco:roundingBorderWidth="1px"
             />
 
         <TextView
