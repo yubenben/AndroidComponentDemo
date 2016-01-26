@@ -57,7 +57,8 @@ public class CardFragment extends Fragment {
             "http://img4.imgtn.bdimg.com/it/u=3055967711,608528141&fm=11&gp=0.jpg",
             "http://img2.imgtn.bdimg.com/it/u=3594948319,3518785373&fm=21&gp=0.jpg",
             "http://img0.imgtn.bdimg.com/it/u=2247699704,405672166&fm=23&gp=0.jpg",
-            "asset:///wall12.jpg"}; // 24个图片资源名称
+            "asset:///wall12.jpg"
+    }; // 24个图片资源名称
 
     private String names[] = {"郭富城", "刘德华", "张学友", "李连杰", "成龙", "谢霆锋", "李易峰",
             "霍建华", "胡歌", "曾志伟", "吴孟达", "梁朝伟", "周星驰", "赵本山", "郭德纲", "周润发", "邓超",
