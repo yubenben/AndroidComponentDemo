@@ -462,6 +462,8 @@ public class CardSlidePanel extends RelativeLayout {
                 if (null != cardSwitchListener) {
                     cardSwitchListener.onItemClick(isShowing);
                 }
+                Log.d(TAG, "onInterceptTouchEvent: mDragHelper.abort()");
+                mDragHelper.abort();
             }
         }
 
@@ -473,6 +475,7 @@ public class CardSlidePanel extends RelativeLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        Log.d(TAG, "onTouchEvent:" + MotionEvent.actionToString(e.getAction()));
         try {
             // 统一交给mDragHelper处理，由DragHelperCallback实现拖动效果
             // 该行代码可能会抛异常，正式发布时请将这行代码加上try catch
