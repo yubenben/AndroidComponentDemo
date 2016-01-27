@@ -23,6 +23,9 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
         @Override
         public void onChanged() {
             super.onChanged();
+            if  (mCardSlidePanel != null) {
+                mCardSlidePanel.refreshViewStack();
+            }
         }
 
         @Override
@@ -129,6 +132,11 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
     @Override
     public void setSelection(int position) {
 
+    }
+
+    private CardSlidePanel mCardSlidePanel;
+    public void setParentView(CardSlidePanel panelView) {
+        mCardSlidePanel = panelView;
     }
 
     public void addViewInLayout(View view, int position) {

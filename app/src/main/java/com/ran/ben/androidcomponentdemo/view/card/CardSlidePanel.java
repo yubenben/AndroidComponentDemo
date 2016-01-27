@@ -27,7 +27,7 @@ import java.util.List;
 @SuppressLint({"HandlerLeak", "NewApi", "ClickableViewAccessibility"})
 public class CardSlidePanel extends RelativeLayout {
     private static final String TAG = "CardSlidePanel";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static final boolean ROTATION_ENABLE = false;
 
     private List<View> viewList = new ArrayList<>(); // 存放的是每一层的view，从顶到底
@@ -60,7 +60,7 @@ public class CardSlidePanel extends RelativeLayout {
     private final Object objLock = new Object();
 
     private CardSwitchListener cardSwitchListener; // 回调接口
-    private int isShowing = 0; // 当前正在显示的小项
+    private int showingPosition = 0; // 当前正在显示的小项
     private View leftBtn, rightBtn;
     private boolean btnLock = false;
     private GestureDetectorCompat moveDetector;
@@ -126,6 +126,7 @@ public class CardSlidePanel extends RelativeLayout {
                 initBottomLayout();
             } else if (childView instanceof  CardAdapterView){
                 mCardAdapterView = (CardAdapterView) childView;
+                mCardAdapterView.setParentView(this);
                 // 滑动相关类
                 mDragHelper = ViewDragHelper
                         .create(mCardAdapterView, 10f, new DragHelperCallback());
@@ -259,6 +260,10 @@ public class CardSlidePanel extends RelativeLayout {
                 return;
             }
 
+            if (DEBUG) {
+                Log.d(TAG, "orderViewStack");
+            }
+
             // 1. 消失的卡片View位置重置，由于大多手机会重新调用onLayout函数，所以此处大可以不做处理，不信你注释掉看看
             changedView.offsetLeftAndRight(initCenterViewX
                     - changedView.getLeft());
@@ -280,11 +285,19 @@ public class CardSlidePanel extends RelativeLayout {
             }
 
             // 3. changedView填充新数据
-            int newIndex = isShowing + 4;
+            int newIndex = showingPosition + 4;
             if (newIndex < mCardAdapterView.getAdapter().getCount()) {
+                if (changedView.getVisibility() != View.VISIBLE) {
+                    changedView.setVisibility(View.VISIBLE);
+                }
                 mCardAdapterView.getAdapter().getView(newIndex, changedView, mCardAdapterView);
             } else {
                 changedView.setVisibility(View.INVISIBLE);
+                if (newIndex >= mCardAdapterView.getAdapter().getCount() - 3) {
+                    if (mOnLastItemVisible != null) {
+                        mOnLastItemVisible.onVisible();
+                    }
+                }
             }
 
             // 4. viewList中的卡片view的位次调整
@@ -293,12 +306,24 @@ public class CardSlidePanel extends RelativeLayout {
             releasedViewList.remove(0);
 
             // 5. 更新showIndex、接口回调
-            if (isShowing + 1 < mCardAdapterView.getAdapter().getCount()) {
-                isShowing++;
+            showingPosition++;
+            if (showingPosition < mCardAdapterView.getAdapter().getCount()) {
+                if (null != cardSwitchListener) {
+                    cardSwitchListener.onShow(showingPosition);
+                }
             }
-            if (null != cardSwitchListener) {
-                cardSwitchListener.onShow(isShowing);
+        }
+    }
+
+    public void refreshViewStack() {
+        int i = 0;
+        for (View view : viewList) {
+            if (View.VISIBLE != view.getVisibility())  {
+                view.setVisibility(View.VISIBLE);
+                mCardAdapterView.getAdapter().getView(showingPosition + i,
+                        view, mCardAdapterView);
             }
+            i++;
         }
     }
 
@@ -404,7 +429,7 @@ public class CardSlidePanel extends RelativeLayout {
 
         // 3. 消失动画即将进行，listener回调
         if (flyType >= 0 && cardSwitchListener != null) {
-            cardSwitchListener.onCardVanish(isShowing, flyType);
+            cardSwitchListener.onCardVanish(showingPosition, flyType);
         }
     }
 
@@ -427,13 +452,13 @@ public class CardSlidePanel extends RelativeLayout {
 
             if (finalX != 0) {
                 releasedViewList.add(animateView);
-                if (mDragHelper.smoothSlideViewTo(animateView, finalX, initCenterViewY + allHeight)) {
+                if (mDragHelper.smoothSlideViewTo(animateView, finalX, initCenterViewY - allHeight / 3)) {
                     ViewCompat.postInvalidateOnAnimation(this);
                 }
             }
 
             if (type >= 0 && cardSwitchListener != null) {
-                cardSwitchListener.onCardVanish(isShowing, type);
+                cardSwitchListener.onCardVanish(showingPosition, type);
             }
         }
     }
@@ -470,7 +495,7 @@ public class CardSlidePanel extends RelativeLayout {
             if (shouldIntercept && !moveFlag) {
                 // 点击的是卡片
                 if (null != cardSwitchListener) {
-                    cardSwitchListener.onItemClick(isShowing);
+                    cardSwitchListener.onItemClick(showingPosition);
                 }
                 if (DEBUG) {
                     Log.d(TAG, "onInterceptTouchEvent: mDragHelper.abort()");
@@ -582,5 +607,15 @@ public class CardSlidePanel extends RelativeLayout {
          * @param index         点击到的index
          */
         void onItemClick(int index);
+    }
+
+    private OnLastItemVisible mOnLastItemVisible = null;
+
+    public interface OnLastItemVisible {
+        void onVisible();
+    }
+
+    public void setOnLastItemVisible(OnLastItemVisible listener) {
+        this.mOnLastItemVisible = listener;
     }
 }

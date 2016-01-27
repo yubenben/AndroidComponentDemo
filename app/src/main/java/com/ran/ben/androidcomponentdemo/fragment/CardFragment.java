@@ -34,6 +34,8 @@ public class CardFragment extends Fragment {
     private List<CardDataItem> dataList = new ArrayList<CardDataItem>();
 
 
+    private boolean onLoading = false;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -52,24 +54,52 @@ public class CardFragment extends Fragment {
             @Override
             public void onShow(int index) {
                 CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
-                Log.d("CardFragment", "正在显示-" + item.userName);
+                if (item != null) {
+                    Log.d("CardFragment", "正在显示-" + item.userName);
+                }
             }
 
             @Override
             public void onCardVanish(int index, int type) {
                 CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
-                Log.d("CardFragment", "正在消失-" + item.userName + " 消失type=" + type);
+                if (item != null) {
+                    Log.d("CardFragment", "正在消失-" + item.userName + " 消失type=" + type);
+                }
             }
 
             @Override
             public void onItemClick(int index) {
                 CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
-                Log.d("CardFragment", "卡片点击-" + item.userName);
-                Toast.makeText(getActivity(), "卡片点击-" + item.userName,
-                        Toast.LENGTH_SHORT).show();
+                if (item != null) {
+                    Log.d("CardFragment", "卡片点击-" + item.userName);
+                    Toast.makeText(getActivity(), "卡片点击-" + item.userName,
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         };
         slidePanel.setCardSwitchListener(cardSwitchListener);
+        slidePanel.setOnLastItemVisible(new CardSlidePanel.OnLastItemVisible() {
+            @Override
+            public void onVisible() {
+                if (!onLoading) {
+                    onLoading = true;
+                    Toast.makeText(getActivity(), "加载更多。。。",
+                            Toast.LENGTH_SHORT).show();
+                    slidePanel.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCardAdapter.addAll(dataList);
+                            mCardAdapter.notifyDataSetChanged();
+                            Toast.makeText(getActivity(), "加载完成。。。",
+                                    Toast.LENGTH_SHORT).show();
+                            onLoading  = false;
+
+                        }
+                    }, 2000);
+                }
+
+            }
+        });
 
     }
 
@@ -82,16 +112,15 @@ public class CardFragment extends Fragment {
     private void prepareDataList() {
         int num = imagePaths.length;
 
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < num; i++) {
-                CardDataItem dataItem = new CardDataItem();
-                dataItem.userName = names[i % 24];
-                dataItem.imagePath = imagePaths[i];
-                dataItem.likeNum = (int) (Math.random() * 10);
-                dataItem.imageNum = (int) (Math.random() * 6);
-                dataList.add(dataItem);
-            }
+        for (int i = 0; i < num; i++) {
+            CardDataItem dataItem = new CardDataItem();
+            dataItem.userName = names[i % 24] + ":" + i;
+            dataItem.imagePath = imagePaths[i];
+            dataItem.likeNum = (int) (Math.random() * 10);
+            dataItem.imageNum = (int) (Math.random() * 6);
+            dataList.add(dataItem);
         }
+
     }
 
 
@@ -132,30 +161,30 @@ public class CardFragment extends Fragment {
 
     private String names[] =
             {
-                    "郭富城1",
-                    "刘德华2",
-                    "张学友3",
-                    "李连杰4",
-                    "成龙5",
-                    "谢霆锋6",
-                    "李易峰7",
-                    "霍建华8",
-                    "胡歌9",
-                    "曾志伟10",
-                    "吴孟达11",
-                    "梁朝伟12",
-                    "周星驰13",
-                    "赵本山14",
-                    "郭德纲15",
-                    "周润发16",
-                    "邓超17",
-                    "王祖蓝18",
-                    "王宝强19",
-                    "黄晓明20",
-                    "张卫健21",
-                    "徐峥22",
-                    "李亚鹏23",
-                    "郑伊健24"
+                    "郭富城",
+                    "刘德华",
+                    "张学友",
+                    "李连杰",
+                    "成龙",
+                    "谢霆锋",
+                    "李易峰",
+                    "霍建华",
+                    "胡歌",
+                    "曾志伟",
+                    "吴孟达",
+                    "梁朝伟",
+                    "周星驰",
+                    "赵本山",
+                    "郭德纲",
+                    "周润发",
+                    "邓超",
+                    "王祖蓝",
+                    "王宝强",
+                    "黄晓明",
+                    "张卫健",
+                    "徐峥",
+                    "李亚鹏",
+                    "郑伊健"
             }; // 24个人名
 
 }

@@ -117,7 +117,7 @@ public class CardAdapter extends BaseCardAdapter {
         }
         holder.mUserNameTv.setText(itemData.userName);
         holder.mImageNumTv.setText(String.valueOf(itemData.imageNum));
-        holder.mLikeNumTv.setText(String.valueOf(itemData.likeNum));
+        holder.mLikeNumTv.setText(String.valueOf(position));
 
         return convertView;
     }
