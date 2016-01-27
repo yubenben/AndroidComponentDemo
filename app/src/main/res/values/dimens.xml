@@ -9,4 +9,5 @@
     <dimen name="app_bar_height">180dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="match_user_card_padding">30dp</dimen>
+    <dimen name="slide_card_rounded_corner_radius">0dp</dimen>
 </resources>

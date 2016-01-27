@@ -3,19 +3,14 @@ package com.ran.ben.androidcomponentdemo.view.card;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.database.DataSetObserver;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 
@@ -30,7 +25,9 @@ import java.util.List;
  * @author xmuSistone
  */
 @SuppressLint({"HandlerLeak", "NewApi", "ClickableViewAccessibility"})
-public class CardSlidePanel  extends RelativeLayout {
+public class CardSlidePanel extends RelativeLayout {
+    private static final String TAG = "CardSlidePanel";
+    private static final boolean ROTATION_ENABLE = true;
     private List<View> viewList = new ArrayList<>(); // 存放的是每一层的view，从顶到底
     private List<View> releasedViewList = new ArrayList<>(); // 手指松开后存放的view列表
 
@@ -65,7 +62,6 @@ public class CardSlidePanel  extends RelativeLayout {
     private View leftBtn, rightBtn;
     private boolean btnLock = false;
     private GestureDetectorCompat moveDetector;
-    private OnClickListener btnListener;
 
     public CardSlidePanel(Context context) {
         this(context, null);
@@ -81,33 +77,7 @@ public class CardSlidePanel  extends RelativeLayout {
 
         bottomMarginTop = (int) a.getDimension(R.styleable.card_bottomMarginTop, bottomMarginTop);
         yOffsetStep = (int) a.getDimension(R.styleable.card_yOffsetStep, yOffsetStep);
-//        // 滑动相关类
-//        mDragHelper = ViewDragHelper
-//                .create(mCardAdapterView, 10f, new DragHelperCallback());
-//        mDragHelper.setEdgeTrackingEnabled(ViewDragHelper.EDGE_LEFT);
         a.recycle();
-
-        btnListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (view instanceof ImageView) {
-                    // 点击的是卡片
-                    if (null != cardSwitchListener && view.getScaleX() > 1 - SCALE_STEP) {
-                        cardSwitchListener.onItemClick(view, isShowing);
-                    }
-                } else {
-                    // 点击的是bottomLayout里面的一些按钮
-                    btnLock = true;
-                    int type = -1;
-                    if (view == leftBtn) {
-                        type = VANISH_TYPE_LEFT;
-                    } else if (view == rightBtn) {
-                        type = VANISH_TYPE_RIGHT;
-                    }
-                    vanishOnBtnClick(type);
-                }
-            }
-        };
 
         moveDetector = new GestureDetectorCompat(context,
                 new MoveDetector());
@@ -166,6 +136,22 @@ public class CardSlidePanel  extends RelativeLayout {
         leftBtn = bottomLayout.findViewById(R.id.card_left_btn);
         rightBtn = bottomLayout.findViewById(R.id.card_right_btn);
 
+        OnClickListener btnListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                // 点击的是bottomLayout里面的一些按钮
+                btnLock = true;
+                int type = -1;
+                if (view == leftBtn) {
+                    type = VANISH_TYPE_LEFT;
+                } else if (view == rightBtn) {
+                    type = VANISH_TYPE_RIGHT;
+                }
+                vanishOnBtnClick(type);
+            }
+        };
+
         leftBtn.setOnClickListener(btnListener);
         rightBtn.setOnClickListener(btnListener);
     }
@@ -206,19 +192,23 @@ public class CardSlidePanel  extends RelativeLayout {
                     || child.getVisibility() != View.VISIBLE || child.getScaleX() <= 1.0f - SCALE_STEP) {
                 // 一般来讲，如果拖动的是第三层、或者第四层的View，则直接禁止
                 // 此处用getScale的用法来巧妙回避
+                Log.d(TAG, "tryCaptureView: return false");
                 return false;
             }
 
             if (btnLock) {
+                Log.d(TAG, "tryCaptureView: return false");
                 return false;
             }
 
             // 只捕获顶部view(rotation=0)
             int childIndex = viewList.indexOf(child);
             if (childIndex > 0) {
+                Log.d(TAG, "tryCaptureView: return false");
                 return false;
             }
 
+            Log.d(TAG, "tryCaptureView: return true");
             return true;
         }
 
@@ -268,7 +258,9 @@ public class CardSlidePanel  extends RelativeLayout {
             changedView.setScaleX(scale);
             changedView.setScaleY(scale);
             //add by yubenben for rotation back
-            //changedView.setRotation(0);
+            if(ROTATION_ENABLE) {
+                changedView.setRotation(0);
+            }
 
             // 2. 卡片View在ViewGroup中的顺次调整
             int num = viewList.size();
@@ -329,8 +321,10 @@ public class CardSlidePanel  extends RelativeLayout {
         ajustLinkageViewItem(changedView, rate2, 2);
 
         //add by yubenben for rotation
-        //float rotation = (30 * (float)changeViewLeft / getWidth());
-        //changedView.setRotation(rotation < 40 ? rotation : 40);
+        if (ROTATION_ENABLE) {
+            float rotation = (30 * (float) changeViewLeft / getWidth());
+            changedView.setRotation(rotation < 40 ? rotation : 40);
+        }
     }
 
     // 由index对应view变成index-1对应的view
@@ -462,8 +456,18 @@ public class CardSlidePanel  extends RelativeLayout {
             // 保存初次按下时arrowFlagView的Y坐标
             // action_down时就让mDragHelper开始工作，否则有时候导致异常
             mDragHelper.processTouchEvent(ev);
+        } else if (action == MotionEvent.ACTION_UP) {
+            if (shouldIntercept && !moveFlag) {
+                // 点击的是卡片
+                if (null != cardSwitchListener) {
+                    cardSwitchListener.onItemClick(isShowing);
+                }
+            }
         }
 
+        Log.d(TAG, "onInterceptTouchEvent:" + MotionEvent.actionToString(action) +
+                ", shouldIntercept = " + shouldIntercept
+                + ", moveFlag = " + moveFlag);
         return shouldIntercept && moveFlag;
     }
 
@@ -481,12 +485,6 @@ public class CardSlidePanel  extends RelativeLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//        measureChildren(widthMeasureSpec, heightMeasureSpec);
-//        int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
-//        int maxHeight = MeasureSpec.getSize(heightMeasureSpec);
-//        setMeasuredDimension(
-//                resolveSizeAndState(maxWidth, widthMeasureSpec, 0),
-//                resolveSizeAndState(maxHeight, heightMeasureSpec, 0));
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         allWidth = getMeasuredWidth();
@@ -562,9 +560,8 @@ public class CardSlidePanel  extends RelativeLayout {
         /**
          * 卡片点击事件
          *
-         * @param cardImageView 卡片上的图片view
          * @param index         点击到的index
          */
-        void onItemClick(View cardImageView, int index);
+        void onItemClick(int index);
     }
 }

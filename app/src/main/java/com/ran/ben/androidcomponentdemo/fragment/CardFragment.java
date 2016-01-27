@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.view.card.CardAdapter;
@@ -50,17 +51,22 @@ public class CardFragment extends Fragment {
 
             @Override
             public void onShow(int index) {
-                Log.d("CardFragment", "正在显示-" + dataList.get(index).userName);
+                CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
+                Log.d("CardFragment", "正在显示-" + item.userName);
             }
 
             @Override
             public void onCardVanish(int index, int type) {
-                Log.d("CardFragment", "正在消失-" + dataList.get(index).userName + " 消失type=" + type);
+                CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
+                Log.d("CardFragment", "正在消失-" + item.userName + " 消失type=" + type);
             }
 
             @Override
-            public void onItemClick(View cardView, int index) {
-                Log.d("CardFragment", "卡片点击-" + dataList.get(index).userName);
+            public void onItemClick(int index) {
+                CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
+                Log.d("CardFragment", "卡片点击-" + item.userName);
+                Toast.makeText(getActivity(), "卡片点击-" + item.userName,
+                        Toast.LENGTH_SHORT).show();
             }
         };
         slidePanel.setCardSwitchListener(cardSwitchListener);

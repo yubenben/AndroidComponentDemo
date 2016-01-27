@@ -23,7 +23,7 @@
             fresco:placeholderImage="@drawable/picture_loading"
             fresco:roundBottomLeft="false"
             fresco:roundBottomRight="false"
-            fresco:roundedCornerRadius="5dp"
+            fresco:roundedCornerRadius="@dimen/slide_card_rounded_corner_radius"
             fresco:roundingBorderColor="#cccccc"
             fresco:roundingBorderWidth="1px"
             />
