@@ -7,12 +7,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.backends.pipeline.PipelineDraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.facebook.imagepipeline.request.Postprocessor;
 import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import jp.wasabeef.fresco.processors.BlurPostprocessor;
 
 /**
  * Created by yubenben
@@ -23,6 +30,7 @@ public class CardAdapter extends BaseCardAdapter {
     private final Object mLock = new Object();
     private ArrayList<CardDataItem> mData;
     private LayoutInflater inflater;
+    private Postprocessor processor;
 
     private int mWidth;
 
@@ -40,6 +48,8 @@ public class CardAdapter extends BaseCardAdapter {
 
         mWidth = (int) (displayWidth -
                 context.getResources().getDimension(R.dimen.match_user_card_padding) * 2);
+
+        processor = new BlurPostprocessor(mContext, 25);
     }
 
     @Override
@@ -91,7 +101,20 @@ public class CardAdapter extends BaseCardAdapter {
 
 
         CardDataItem itemData = getDataItem(position);
-        holder.mImageView.setImageURI(Uri.parse(itemData.imagePath));
+        if (position % 2 == 0) {
+            holder.mImageView.setImageURI(Uri.parse(itemData.imagePath));
+        } else {
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(itemData.imagePath))
+                    .setPostprocessor(processor)
+                    .build();
+
+            PipelineDraweeController controller =
+                    (PipelineDraweeController) Fresco.newDraweeControllerBuilder()
+                            .setImageRequest(request)
+                            .setOldController(holder.mImageView.getController())
+                            .build();
+            holder.mImageView.setController(controller);
+        }
         holder.mUserNameTv.setText(itemData.userName);
         holder.mImageNumTv.setText(String.valueOf(itemData.imageNum));
         holder.mLikeNumTv.setText(String.valueOf(itemData.likeNum));

@@ -27,11 +27,13 @@ import java.util.List;
 @SuppressLint({"HandlerLeak", "NewApi", "ClickableViewAccessibility"})
 public class CardSlidePanel extends RelativeLayout {
     private static final String TAG = "CardSlidePanel";
-    private static final boolean ROTATION_ENABLE = true;
+    private static final boolean DEBUG = false;
+    private static final boolean ROTATION_ENABLE = false;
+
     private List<View> viewList = new ArrayList<>(); // 存放的是每一层的view，从顶到底
     private List<View> releasedViewList = new ArrayList<>(); // 手指松开后存放的view列表
 
-    private CardAdapterView mCardAdapterView;
+    private CardAdapterView mCardAdapterView;  //卡片列表
 
     /* 拖拽工具类 */
     private ViewDragHelper mDragHelper; // 这个跟原生的ViewDragHelper差不多，我仅仅只是修改了Interpolator
@@ -192,23 +194,31 @@ public class CardSlidePanel extends RelativeLayout {
                     || child.getVisibility() != View.VISIBLE || child.getScaleX() <= 1.0f - SCALE_STEP) {
                 // 一般来讲，如果拖动的是第三层、或者第四层的View，则直接禁止
                 // 此处用getScale的用法来巧妙回避
-                Log.d(TAG, "tryCaptureView: return false");
+                if (DEBUG) {
+                    Log.d(TAG, "tryCaptureView: return false");
+                }
                 return false;
             }
 
             if (btnLock) {
-                Log.d(TAG, "tryCaptureView: return false");
+                if (DEBUG) {
+                    Log.d(TAG, "tryCaptureView: return false");
+                }
                 return false;
             }
 
             // 只捕获顶部view(rotation=0)
             int childIndex = viewList.indexOf(child);
             if (childIndex > 0) {
-                Log.d(TAG, "tryCaptureView: return false");
+                if (DEBUG) {
+                    Log.d(TAG, "tryCaptureView: return false");
+                }
                 return false;
             }
 
-            Log.d(TAG, "tryCaptureView: return true");
+            if (DEBUG) {
+                Log.d(TAG, "tryCaptureView: return true");
+            }
             return true;
         }
 
@@ -462,20 +472,26 @@ public class CardSlidePanel extends RelativeLayout {
                 if (null != cardSwitchListener) {
                     cardSwitchListener.onItemClick(isShowing);
                 }
-                Log.d(TAG, "onInterceptTouchEvent: mDragHelper.abort()");
+                if (DEBUG) {
+                    Log.d(TAG, "onInterceptTouchEvent: mDragHelper.abort()");
+                }
                 mDragHelper.abort();
             }
         }
 
-        Log.d(TAG, "onInterceptTouchEvent:" + MotionEvent.actionToString(action) +
-                ", shouldIntercept = " + shouldIntercept
-                + ", moveFlag = " + moveFlag);
+        if (DEBUG) {
+            Log.d(TAG, "onInterceptTouchEvent:" + MotionEvent.actionToString(action) +
+                    ", shouldIntercept = " + shouldIntercept
+                    + ", moveFlag = " + moveFlag);
+        }
         return shouldIntercept && moveFlag;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        Log.d(TAG, "onTouchEvent:" + MotionEvent.actionToString(e.getAction()));
+        if (DEBUG) {
+            Log.d(TAG, "onTouchEvent:" + MotionEvent.actionToString(e.getAction()));
+        }
         try {
             // 统一交给mDragHelper处理，由DragHelperCallback实现拖动效果
             // 该行代码可能会抛异常，正式发布时请将这行代码加上try catch
@@ -490,7 +506,7 @@ public class CardSlidePanel extends RelativeLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        allWidth = getMeasuredWidth();
+        allWidth = getMeasuredWidth() + 100;
         allHeight = getMeasuredHeight();
     }
 
