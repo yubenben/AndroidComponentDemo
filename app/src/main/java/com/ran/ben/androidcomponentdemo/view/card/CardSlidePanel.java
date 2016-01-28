@@ -21,10 +21,7 @@ import java.util.List;
 
 /**
  * 卡片滑动面板，主要逻辑实现类
- *
- * @author xmuSistone
  */
-@SuppressLint({"HandlerLeak", "NewApi", "ClickableViewAccessibility"})
 public class CardSlidePanel extends RelativeLayout {
     private static final String TAG = "CardSlidePanel";
     private static final boolean DEBUG = true;
@@ -124,7 +121,7 @@ public class CardSlidePanel extends RelativeLayout {
             if (childView.getId() == R.id.card_bottom_layout) {
                 bottomLayout = childView;
                 initBottomLayout();
-            } else if (childView instanceof  CardAdapterView){
+            } else if (childView instanceof CardAdapterView) {
                 mCardAdapterView = (CardAdapterView) childView;
                 mCardAdapterView.setParentView(this);
                 // 滑动相关类
@@ -273,7 +270,7 @@ public class CardSlidePanel extends RelativeLayout {
             changedView.setScaleX(scale);
             changedView.setScaleY(scale);
             //add by yubenben for rotation back
-            if(ROTATION_ENABLE) {
+            if (ROTATION_ENABLE) {
                 changedView.setRotation(0);
             }
 
@@ -318,7 +315,7 @@ public class CardSlidePanel extends RelativeLayout {
     public void refreshViewStack() {
         int i = 0;
         for (View view : viewList) {
-            if (View.VISIBLE != view.getVisibility())  {
+            if (View.VISIBLE != view.getVisibility()) {
                 view.setVisibility(View.VISIBLE);
                 mCardAdapterView.getAdapter().getView(showingPosition + i,
                         view, mCardAdapterView);
@@ -604,7 +601,7 @@ public class CardSlidePanel extends RelativeLayout {
         /**
          * 卡片点击事件
          *
-         * @param index         点击到的index
+         * @param index 点击到的index
          */
         void onItemClick(int index);
     }

@@ -21,7 +21,6 @@ import java.util.List;
 /**
  * 卡片Fragment
  *
- * @author xmuSistone
  */
 @SuppressLint({"HandlerLeak", "NewApi", "InflateParams"})
 public class CardFragment extends Fragment {

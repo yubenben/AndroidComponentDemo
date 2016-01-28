@@ -3,7 +3,6 @@ package com.ran.ben.androidcomponentdemo.view.card;
 /**
  * 卡片数据装载对象
  *
- * @author xmuSistone
  */
 public class CardDataItem {
     public String imagePath;
