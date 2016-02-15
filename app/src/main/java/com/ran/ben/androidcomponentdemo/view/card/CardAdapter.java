@@ -69,7 +69,7 @@ public class CardAdapter extends BaseCardAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 3;
+        return 2;
     }
 
     @Override
@@ -101,20 +101,28 @@ public class CardAdapter extends BaseCardAdapter {
 
 
         CardDataItem itemData = getDataItem(position);
-        if (position % 2 == 0) {
-            holder.mImageView.setImageURI(Uri.parse(itemData.imagePath));
-        } else {
-            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(itemData.imagePath))
-                    .setPostprocessor(processor)
-                    .build();
+        int type = getItemViewType(position);
+        switch (type) {
+            case CardDataItem.DATA_TYPE_NORMAL:
+                holder.mImageView.setImageURI(Uri.parse(itemData.imagePath));
+                break;
+            case CardDataItem.DATA_TYPE_BLUR:
+                ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(itemData.imagePath))
+                        .setPostprocessor(processor)
+                        .build();
 
-            PipelineDraweeController controller =
-                    (PipelineDraweeController) Fresco.newDraweeControllerBuilder()
-                            .setImageRequest(request)
-                            .setOldController(holder.mImageView.getController())
-                            .build();
-            holder.mImageView.setController(controller);
+                PipelineDraweeController controller =
+                        (PipelineDraweeController) Fresco.newDraweeControllerBuilder()
+                                .setImageRequest(request)
+                                .setOldController(holder.mImageView.getController())
+                                .build();
+                holder.mImageView.setController(controller);
+                break;
+            default:
+                holder.mImageView.setImageURI(Uri.parse(itemData.imagePath));
+                break;
         }
+
         holder.mUserNameTv.setText(itemData.userName);
         holder.mImageNumTv.setText(String.valueOf(itemData.imageNum));
         holder.mLikeNumTv.setText(String.valueOf(position));

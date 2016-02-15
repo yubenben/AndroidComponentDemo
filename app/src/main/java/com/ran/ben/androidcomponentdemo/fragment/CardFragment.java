@@ -117,6 +117,12 @@ public class CardFragment extends Fragment {
             dataItem.imagePath = imagePaths[i];
             dataItem.likeNum = (int) (Math.random() * 10);
             dataItem.imageNum = (int) (Math.random() * 6);
+
+            if (10 == i % 24) {
+                dataItem.setType(CardDataItem.DATA_TYPE_BLUR);
+            } else {
+                dataItem.setType(CardDataItem.DATA_TYPE_NORMAL);
+            }
             dataList.add(dataItem);
         }
 

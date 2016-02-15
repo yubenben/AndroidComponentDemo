@@ -5,6 +5,10 @@ package com.ran.ben.androidcomponentdemo.view.card;
  *
  */
 public class CardDataItem {
+
+    public static final int  DATA_TYPE_NORMAL  = 0;
+    public static final int  DATA_TYPE_BLUR  = 1;
+
     public String imagePath;
     public String userName;
     public int likeNum;
