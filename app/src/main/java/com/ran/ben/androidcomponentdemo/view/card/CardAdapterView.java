@@ -8,8 +8,9 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ListAdapter;
+
+import com.ran.ben.androidcomponentdemo.R;
 
 /**
  * Created by yubenben
@@ -17,6 +18,7 @@ import android.widget.ListAdapter;
  */
 public class CardAdapterView extends AdapterView<ListAdapter> {
 
+    private static final String TAG = "CardAdapterView";
     private ListAdapter mListAdapter;
 
     private final DataSetObserver mDataSetObserver = new DataSetObserver() {
@@ -94,6 +96,7 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
 
+        int topMargin  = (int) getResources().getDimension(R.dimen.card_top_margin);
         for (int i = 0; i < getChildCount(); i++) {
             boundsRect.set(0, 0, getWidth(), getHeight());
 
@@ -102,9 +105,16 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
             w = view.getMeasuredWidth();
             h = view.getMeasuredHeight();
 
-            Gravity.apply(Gravity.CENTER_HORIZONTAL, w, h, boundsRect, childRect);
+            Gravity.apply(Gravity.CENTER_HORIZONTAL | Gravity.TOP, w, h, boundsRect, 0, topMargin, childRect);
             view.layout(childRect.left, childRect.top,
                     childRect.right, childRect.bottom);
+//            Log.d(TAG, "onLayout: boundsRect: left=" + boundsRect.left
+//                    + ", top=" + boundsRect.top + ", right=" + boundsRect.right
+//                    + ", bottom=" + boundsRect.bottom);
+//            Log.d(TAG, "onLayout: childRect: left=" + childRect.left
+//                    + ", top=" + childRect.top + ", right=" + childRect.right
+//                    + ", bottom=" + childRect.bottom);
+
         }
     }
 
@@ -140,7 +150,8 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
     }
 
     public void addViewInLayout(View view, int position) {
-        addViewInLayout(view, 0, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+        addViewInLayout(view, 0, new LayoutParams(LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT,
                 mListAdapter.getItemViewType(position)), false);
     }
 }

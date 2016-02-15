@@ -15,6 +15,7 @@ import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 
 import com.ran.ben.androidcomponentdemo.R;
+import com.ran.ben.androidcomponentdemo.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -502,7 +503,7 @@ public class CardSlidePanel extends RelativeLayout {
         }
 
         if (DEBUG) {
-            Log.d(TAG, "onInterceptTouchEvent:" + MotionEvent.actionToString(action) +
+            Log.d(TAG, "onInterceptTouchEvent:" + StringUtils.motionEventActionToString(action) +
                     ", shouldIntercept = " + shouldIntercept
                     + ", moveFlag = " + moveFlag);
         }
@@ -512,7 +513,7 @@ public class CardSlidePanel extends RelativeLayout {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         if (DEBUG) {
-            Log.d(TAG, "onTouchEvent:" + MotionEvent.actionToString(e.getAction()));
+            Log.d(TAG, "onTouchEvent:" + StringUtils.motionEventActionToString(e.getAction()));
         }
         try {
             // 统一交给mDragHelper处理，由DragHelperCallback实现拖动效果
@@ -536,13 +537,13 @@ public class CardSlidePanel extends RelativeLayout {
     protected void onLayout(boolean changed, int left, int top, int right,
                             int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        // 布局卡片view
+
         int size = viewList.size();
         if (size > 0) {
+
+            // 布局卡片view
             for (int i = 0; i < size; i++) {
                 View viewItem = viewList.get(i);
-                int childHeight = viewItem.getMeasuredHeight();
-                viewItem.layout(left, top, right, top + childHeight);
                 int offset = yOffsetStep * i;
                 float scale = 1 - SCALE_STEP * i;
                 if (i > 2) {
@@ -554,13 +555,6 @@ public class CardSlidePanel extends RelativeLayout {
                 viewItem.offsetTopAndBottom(offset);
                 viewItem.setScaleX(scale);
                 viewItem.setScaleY(scale);
-            }
-
-            // 布局底部按钮的View
-            if (null != bottomLayout) {
-                int layoutTop = viewList.get(0).getMeasuredHeight() + bottomMarginTop;
-                bottomLayout.layout(left, layoutTop, right, layoutTop
-                        + bottomLayout.getMeasuredHeight());
             }
 
             // 初始化一些中间参数
