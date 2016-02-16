@@ -26,7 +26,7 @@ import java.util.List;
 public class CardSlidePanel extends RelativeLayout {
     private static final String TAG = "CardSlidePanel";
     private static final boolean DEBUG = true;
-    private static final boolean ROTATION_ENABLE = false;
+    private static final boolean ROTATION_ENABLE = true;
 
     private List<View> viewList = new ArrayList<>(); // 存放的是每一层的view，从顶到底
     private List<View> releasedViewList = new ArrayList<>(); // 手指松开后存放的view列表
@@ -39,6 +39,8 @@ public class CardSlidePanel extends RelativeLayout {
     private int allWidth = 0; // 面板的宽度
     private int allHeight = 0; // 面板的高度
     private int childWith = 0; // 每一个子View对应的宽度
+    //触摸到卡片的下半部分
+    private boolean touchOnBottom;
 
     private static final float SCALE_STEP = 0.08f; // view叠加缩放的步长
     private static final int MAX_SLIDE_DISTANCE_LINKAGE = 400; // 水平距离+垂直距离
@@ -102,6 +104,9 @@ public class CardSlidePanel extends RelativeLayout {
     private final static int MAX_VIEW_SIZE = 4;
 
     private void ensureFull() {
+        if (DEBUG) {
+            Log.d(TAG, "ensureFull");
+        }
         viewList.clear();
         for (int i = 0; i < MAX_VIEW_SIZE; i++) {
             View viewItem = mCardAdapterView.getAdapter().getView(i, null, mCardAdapterView);
@@ -113,6 +118,10 @@ public class CardSlidePanel extends RelativeLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+
+        if (DEBUG) {
+            Log.d(TAG, "onFinishInflate");
+        }
 
         // 渲染完成，初始化卡片view列表
         viewList.clear();
@@ -134,6 +143,9 @@ public class CardSlidePanel extends RelativeLayout {
     }
 
     private void initBottomLayout() {
+        if (DEBUG) {
+            Log.d(TAG, "initBottomLayout");
+        }
         leftBtn = bottomLayout.findViewById(R.id.card_left_btn);
         rightBtn = bottomLayout.findViewById(R.id.card_right_btn);
 
@@ -176,6 +188,9 @@ public class CardSlidePanel extends RelativeLayout {
         @Override
         public void onViewPositionChanged(View changedView, int left, int top,
                                           int dx, int dy) {
+            if (DEBUG) {
+                Log.d(TAG, "onViewPositionChanged() called with: " + "changedView = [" + changedView + "], left = [" + left + "], top = [" + top + "], dx = [" + dx + "], dy = [" + dy + "]");
+            }
             // 调用offsetLeftAndRight导致viewPosition改变，会调到此处，所以此处对index做保护处理
             int index = viewList.indexOf(changedView);
             if (index + 2 > viewList.size()) {
@@ -314,6 +329,9 @@ public class CardSlidePanel extends RelativeLayout {
     }
 
     public void refreshViewStack() {
+        if (DEBUG) {
+            Log.d(TAG, "refreshViewStack");
+        }
         int i = 0;
         for (View view : viewList) {
             if (View.VISIBLE != view.getVisibility()) {
@@ -331,6 +349,9 @@ public class CardSlidePanel extends RelativeLayout {
      * @param changedView 顶层的卡片view
      */
     private void processLinkageView(View changedView) {
+        if (DEBUG) {
+            Log.d(TAG, "processLinkageView");
+        }
         int changeViewLeft = changedView.getLeft();
         int changeViewTop = changedView.getTop();
         int distance = Math.abs(changeViewTop - initCenterViewY)
@@ -355,13 +376,24 @@ public class CardSlidePanel extends RelativeLayout {
 
         //add by yubenben for rotation
         if (ROTATION_ENABLE) {
-            float rotation = (30 * (float) changeViewLeft / getWidth());
-            changedView.setRotation(rotation < 40 ? rotation : 40);
+            if (touchOnBottom) {
+                float rotation = Math.copySign(Math.abs((float)changeViewLeft - initCenterViewX) / 50, initCenterViewX - changeViewLeft);
+                Log.d(TAG, "processLinkageView: rotation = " + rotation);
+                changedView.setRotation(Math.abs(rotation) < 45 ? rotation : Math.copySign(45, rotation));
+
+            } else {
+                float rotation = Math.copySign(Math.abs((float)changeViewLeft - initCenterViewX) / 25, changeViewLeft - initCenterViewX);
+                Log.d(TAG, "processLinkageView: rotation = " + rotation);
+                changedView.setRotation(Math.abs(rotation) < 45 ? rotation : Math.copySign(45, rotation));
+            }
         }
     }
 
     // 由index对应view变成index-1对应的view
     private void ajustLinkageViewItem(View changedView, float rate, int index) {
+        if (DEBUG) {
+            Log.d(TAG, "ajustLinkageViewItem: rate="+ rate +  "  index=" + index);
+        }
         int changeIndex = viewList.indexOf(changedView);
         int initPosY = yOffsetStep * index;
         float initScale = 1 - SCALE_STEP * index;
@@ -385,6 +417,9 @@ public class CardSlidePanel extends RelativeLayout {
      * @param xvel X方向上的滑动速度
      */
     private void animToSide(View changedView, float xvel, float yvel) {
+        if (DEBUG) {
+            Log.d(TAG, "animToSide: xvel=" + xvel + " yvel=" + yvel);
+        }
         int finalX = initCenterViewX;
         int finalY = initCenterViewY;
         int flyType = -1;
@@ -397,11 +432,11 @@ public class CardSlidePanel extends RelativeLayout {
             dx = 1;
         }
         if (xvel > X_VEL_THRESHOLD || dx > X_DISTANCE_THRESHOLD) {
-            finalX = allWidth;
+            finalX = allWidth * 3 / 2;
             finalY = dy * (childWith + initCenterViewX) / dx + initCenterViewY;
             flyType = VANISH_TYPE_RIGHT;
         } else if (xvel < -X_VEL_THRESHOLD || dx < -X_DISTANCE_THRESHOLD) {
-            finalX = -childWith;
+            finalX = -childWith * 3 / 2;
             finalY = dy * (childWith + initCenterViewX) / (-dx) + dy
                     + initCenterViewY;
             flyType = VANISH_TYPE_LEFT;
@@ -436,6 +471,9 @@ public class CardSlidePanel extends RelativeLayout {
      */
     private void vanishOnBtnClick(int type) {
         synchronized (objLock) {
+            if (DEBUG) {
+                Log.d(TAG, "vanishOnBtnClick: type=" + type);
+            }
             View animateView = viewList.get(0);
             if (animateView.getVisibility() != View.VISIBLE || releasedViewList.contains(animateView)) {
                 return;
@@ -463,6 +501,9 @@ public class CardSlidePanel extends RelativeLayout {
 
     @Override
     public void computeScroll() {
+        if (DEBUG) {
+            Log.d(TAG, "computeScroll");
+        }
         if (mDragHelper.continueSettling(true)) {
             ViewCompat.postInvalidateOnAnimation(this);
         } else {
@@ -483,6 +524,14 @@ public class CardSlidePanel extends RelativeLayout {
         boolean moveFlag = moveDetector.onTouchEvent(ev);
         int action = ev.getActionMasked();
         if (action == MotionEvent.ACTION_DOWN) {
+
+            float downX = ev.getX();
+            float downY = ev.getY();
+            Log.d(TAG, "onInterceptTouchEvent: downY=" + downY
+                    + " initCenterViewY=" + initCenterViewY + " childWidth=" + childWith
+                    + " centerY = " + (initCenterViewY + (float)childWith / 2));
+            touchOnBottom = downY >  initCenterViewY + (float)childWith / 2;
+
             // ACTION_DOWN的时候就对view重新排序
             orderViewStack();
 
@@ -538,6 +587,9 @@ public class CardSlidePanel extends RelativeLayout {
                             int bottom) {
         super.onLayout(changed, left, top, right, bottom);
 
+        if (DEBUG) {
+            Log.d(TAG, "onLayout");
+        }
         int size = viewList.size();
         if (size > 0) {
 
@@ -555,6 +607,7 @@ public class CardSlidePanel extends RelativeLayout {
                 viewItem.offsetTopAndBottom(offset);
                 viewItem.setScaleX(scale);
                 viewItem.setScaleY(scale);
+                viewItem.setRotation(0);
             }
 
             // 初始化一些中间参数
