@@ -71,8 +71,8 @@ public class CardFragment extends Fragment {
                 CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
                 if (item != null) {
                     Log.d("CardFragment", "卡片点击-" + item.userName);
-                    Toast.makeText(getActivity(), "卡片点击-" + item.userName,
-                            Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getActivity(), "卡片点击-" + item.userName,
+//                            Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -105,6 +105,27 @@ public class CardFragment extends Fragment {
     private void initData() {
         prepareDataList();
         mCardAdapter = new CardAdapter(getActivity(), dataList);
+        mCardAdapter.setOnCardItemOnClickListener(new CardAdapter.ICardItemOnClickListener() {
+            @Override
+            public void itemClick(View v, CardDataItem data) {
+                Toast.makeText(getActivity(), "++点击卡片 " + data.userName,
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void likeButtonClick(CardDataItem data) {
+//                Toast.makeText(getActivity(), "++点击喜欢 " + data.userName,
+//                        Toast.LENGTH_SHORT).show();
+                slidePanel.vanishOnBtnClick(CardSlidePanel.VANISH_TYPE_RIGHT);
+            }
+
+            @Override
+            public void ignoreButtonClick(CardDataItem data) {
+//                Toast.makeText(getActivity(), "++点击无感 " + data.userName,
+//                        Toast.LENGTH_SHORT).show();
+                slidePanel.vanishOnBtnClick(CardSlidePanel.VANISH_TYPE_LEFT);
+            }
+        });
         slidePanel.setAdapter(mCardAdapter);
     }
 

@@ -5,7 +5,9 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.backends.pipeline.PipelineDraweeController;
@@ -93,6 +95,8 @@ public class CardAdapter extends BaseCardAdapter {
             holder.mUserNameTv = (TextView) convertView.findViewById(R.id.card_user_name);
             holder.mImageNumTv = (TextView) convertView.findViewById(R.id.card_pic_num);
             holder.mLikeNumTv = (TextView) convertView.findViewById(R.id.card_like);
+            holder.ignoreBtn = (ImageView) convertView.findViewById(R.id.ignore_btn);
+            holder.likeBtn = (ImageView) convertView.findViewById(R.id.like_btn);
 
             convertView.setTag(holder);
         } else {
@@ -100,7 +104,7 @@ public class CardAdapter extends BaseCardAdapter {
         }
 
 
-        CardDataItem itemData = getDataItem(position);
+        final CardDataItem itemData = getDataItem(position);
         int type = getItemViewType(position);
         switch (type) {
             case CardDataItem.DATA_TYPE_NORMAL:
@@ -122,10 +126,44 @@ public class CardAdapter extends BaseCardAdapter {
                 holder.mImageView.setImageURI(Uri.parse(itemData.imagePath));
                 break;
         }
+        holder.mImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) {
+                    mListener.itemClick(v, itemData);
+                } else {
+                    Toast.makeText(mContext, "卡片点击-" + itemData.userName,
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         holder.mUserNameTv.setText(itemData.userName);
         holder.mImageNumTv.setText(String.valueOf(itemData.imageNum));
         holder.mLikeNumTv.setText(String.valueOf(position));
+        holder.ignoreBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) {
+                    mListener.ignoreButtonClick(itemData);
+                } else {
+                    Toast.makeText(mContext, "点击无感",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        holder.likeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) {
+                    mListener.likeButtonClick(itemData);
+                } else {
+                    Toast.makeText(mContext, "点击喜欢",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         return convertView;
     }
@@ -135,6 +173,8 @@ public class CardAdapter extends BaseCardAdapter {
         TextView mUserNameTv;
         TextView mImageNumTv;
         TextView mLikeNumTv;
+        ImageView likeBtn;
+        ImageView ignoreBtn;
     }
 
     public CardDataItem getDataItem(int position) {
@@ -165,5 +205,18 @@ public class CardAdapter extends BaseCardAdapter {
             mData.addAll(items);
         }
         notifyDataSetChanged();
+    }
+
+    private ICardItemOnClickListener mListener;
+
+    public void setOnCardItemOnClickListener(ICardItemOnClickListener listener) {
+        mListener = listener;
+    }
+    public interface ICardItemOnClickListener {
+        void itemClick(View v, CardDataItem data);
+
+        void likeButtonClick(CardDataItem data);
+
+        void ignoreButtonClick(CardDataItem data);
     }
 }

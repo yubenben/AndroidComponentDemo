@@ -4,8 +4,8 @@
     <solid android:color="#ffffff" />
 
     <corners
-        android:bottomLeftRadius="5dp"
-        android:bottomRightRadius="5dp"
+        android:bottomLeftRadius="@dimen/slide_card_rounded_corner_radius"
+        android:bottomRightRadius="@dimen/slide_card_rounded_corner_radius"
         android:topLeftRadius="0px"
         android:topRightRadius="0px" />
 

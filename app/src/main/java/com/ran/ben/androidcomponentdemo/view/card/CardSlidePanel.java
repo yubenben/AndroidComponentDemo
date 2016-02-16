@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class CardSlidePanel extends RelativeLayout {
     private static final String TAG = "CardSlidePanel";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final boolean ROTATION_ENABLE = true;
 
     private List<View> viewList = new ArrayList<>(); // 存放的是每一层的view，从顶到底
@@ -239,7 +239,7 @@ public class CardSlidePanel extends RelativeLayout {
         @Override
         public int getViewHorizontalDragRange(View child) {
             // 这个用来控制拖拽过程中松手后，自动滑行的速度
-            return 256;
+            return 20;
         }
 
         @Override
@@ -378,12 +378,16 @@ public class CardSlidePanel extends RelativeLayout {
         if (ROTATION_ENABLE) {
             if (touchOnBottom) {
                 float rotation = Math.copySign(Math.abs((float)changeViewLeft - initCenterViewX) / 50, initCenterViewX - changeViewLeft);
-                Log.d(TAG, "processLinkageView: rotation = " + rotation);
+                if (DEBUG) {
+                    Log.d(TAG, "processLinkageView: rotation = " + rotation);
+                }
                 changedView.setRotation(Math.abs(rotation) < 45 ? rotation : Math.copySign(45, rotation));
 
             } else {
                 float rotation = Math.copySign(Math.abs((float)changeViewLeft - initCenterViewX) / 25, changeViewLeft - initCenterViewX);
-                Log.d(TAG, "processLinkageView: rotation = " + rotation);
+                if (DEBUG) {
+                    Log.d(TAG, "processLinkageView: rotation = " + rotation);
+                }
                 changedView.setRotation(Math.abs(rotation) < 45 ? rotation : Math.copySign(45, rotation));
             }
         }
@@ -469,7 +473,7 @@ public class CardSlidePanel extends RelativeLayout {
     /**
      * 点击按钮消失动画
      */
-    private void vanishOnBtnClick(int type) {
+    public void vanishOnBtnClick(int type) {
         synchronized (objLock) {
             if (DEBUG) {
                 Log.d(TAG, "vanishOnBtnClick: type=" + type);
@@ -481,14 +485,15 @@ public class CardSlidePanel extends RelativeLayout {
 
             int finalX = 0;
             if (type == VANISH_TYPE_LEFT) {
-                finalX = -childWith;
+                finalX = -childWith * 3 / 2;
             } else if (type == VANISH_TYPE_RIGHT) {
-                finalX = allWidth;
+                finalX = allWidth * 3 / 2;
             }
 
             if (finalX != 0) {
+                touchOnBottom = false;
                 releasedViewList.add(animateView);
-                if (mDragHelper.smoothSlideViewTo(animateView, finalX, initCenterViewY - allHeight / 3)) {
+                if (mDragHelper.smoothSlideViewTo(animateView, finalX, initCenterViewY)) {
                     ViewCompat.postInvalidateOnAnimation(this);
                 }
             }
@@ -525,12 +530,14 @@ public class CardSlidePanel extends RelativeLayout {
         int action = ev.getActionMasked();
         if (action == MotionEvent.ACTION_DOWN) {
 
-            float downX = ev.getX();
+            //确定手指触摸卡片的位置
             float downY = ev.getY();
-            Log.d(TAG, "onInterceptTouchEvent: downY=" + downY
-                    + " initCenterViewY=" + initCenterViewY + " childWidth=" + childWith
-                    + " centerY = " + (initCenterViewY + (float)childWith / 2));
             touchOnBottom = downY >  initCenterViewY + (float)childWith / 2;
+            if (DEBUG) {
+                Log.d(TAG, "onInterceptTouchEvent: downY=" + downY
+                        + " initCenterViewY=" + initCenterViewY + " childWidth=" + childWith
+                        + " centerY = " + (initCenterViewY + (float)childWith / 2));
+            }
 
             // ACTION_DOWN的时候就对view重新排序
             orderViewStack();
@@ -578,7 +585,7 @@ public class CardSlidePanel extends RelativeLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        allWidth = getMeasuredWidth() + 100;
+        allWidth = getMeasuredWidth();
         allHeight = getMeasuredHeight();
     }
 
