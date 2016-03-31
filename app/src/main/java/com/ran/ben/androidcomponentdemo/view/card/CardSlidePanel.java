@@ -23,7 +23,8 @@ import java.util.List;
 /**
  * 卡片滑动面板，主要逻辑实现类
  */
-public class CardSlidePanel extends RelativeLayout {
+public class
+        CardSlidePanel extends RelativeLayout {
     private static final String TAG = "CardSlidePanel";
     private static final boolean DEBUG = false;
     private static final boolean ROTATION_ENABLE = true;

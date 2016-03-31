@@ -8,5 +8,6 @@
         <item>ScrollingActivity</item>
         <item>HeaderScrollingActivity</item>
         <item>CardSlideActivity</item>
+        <item>CicrcleProgressActivity</item>
     </array>
 </resources>

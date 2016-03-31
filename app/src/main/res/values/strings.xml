@@ -101,5 +101,6 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="title_activity_header_scrolling">HeaderScrollingActivity</string>
+    <string name="title_activity_cicrcle_progress">CicrcleProgressActivity</string>
 
 </resources>
