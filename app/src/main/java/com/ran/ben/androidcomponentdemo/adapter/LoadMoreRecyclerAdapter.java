@@ -24,7 +24,11 @@ public class LoadMoreRecyclerAdapter extends BaseLoadMoreRecyclerAdapter<String,
     @Override
     public void onBindItemViewHolder(ViewHolder holder, int position) {
         try{
-            holder.mTextView.setText(getItem(position));
+            StringBuffer str = new StringBuffer();
+            for  (int i = 0; i < position; i++) {
+                str.append("str");
+            }
+            holder.mTextView.setText(getItem(position) + str);
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -48,7 +48,6 @@ public class CardSlidePanel extends RelativeLayout {
     // 则下一层view完成向上一层view的过渡
     private View bottomLayout; // 卡片下边的三个按钮布局
 
-    private int bottomMarginTop = 40;
     private int yOffsetStep = 40; // view叠加垂直偏移量的步长
 
     private static final int X_VEL_THRESHOLD = 900;
@@ -77,7 +76,6 @@ public class CardSlidePanel extends RelativeLayout {
         super(context, attrs, defStyle);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.card);
 
-        bottomMarginTop = (int) a.getDimension(R.styleable.card_bottomMarginTop, bottomMarginTop);
         yOffsetStep = (int) a.getDimension(R.styleable.card_yOffsetStep, yOffsetStep);
         a.recycle();
 
@@ -546,16 +544,16 @@ public class CardSlidePanel extends RelativeLayout {
             // action_down时就让mDragHelper开始工作，否则有时候导致异常
             mDragHelper.processTouchEvent(ev);
         } else if (action == MotionEvent.ACTION_UP) {
-            if (shouldIntercept && !moveFlag) {
-                // 点击的是卡片
-                if (null != cardSwitchListener) {
-                    cardSwitchListener.onItemClick(showingPosition);
-                }
-                if (DEBUG) {
-                    Log.d(TAG, "onInterceptTouchEvent: mDragHelper.abort()");
-                }
-                mDragHelper.abort();
-            }
+//            if (shouldIntercept && !moveFlag) {
+//                // 点击的是卡片
+//                if (null != cardSwitchListener) {
+//                    cardSwitchListener.onItemClick(showingPosition);
+//                }
+//                if (DEBUG) {
+//                    Log.d(TAG, "onInterceptTouchEvent: mDragHelper.abort()");
+//                }
+//                mDragHelper.abort();
+//            }
         }
 
         if (DEBUG) {

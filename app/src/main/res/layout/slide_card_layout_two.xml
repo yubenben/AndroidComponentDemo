@@ -3,7 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card="http://schemas.android.com/apk/res-auto"
     android:id="@+id/image_slide_panel"
-    card:bottomMarginTop="40dp"
     card:yOffsetStep="22dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -14,8 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:orientation="horizontal" >
 
         <Button
             android:id="@+id/card_left_btn"
