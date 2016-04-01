@@ -1,5 +1,9 @@
 package com.ran.ben.androidcomponentdemo.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -11,212 +15,316 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.view.ViewGroup;
+import android.view.animation.OvershootInterpolator;
 import android.widget.RelativeLayout;
 
 import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 
 public class ProgressBarCircular extends RelativeLayout {
 
 
-    final static String ANDROIDXML = "http://schemas.android.com/apk/res/android";
+    final static String ANDROID_XML = "http://schemas.android.com/apk/res/android";
+    int backgroundColor = Color.parseColor("#FFFD6859");
+    int backgroundColorPrimy = Color.parseColor("#FFFDADA3");
+    int backgroundColorGray = Color.parseColor("#FFF3F3F3");
 
-    int backgroundColor = Color.parseColor("#1E88E5");
+    //从外到内的三个圆弧的bitmap
+    private Bitmap bitmapArc1;
+    private Bitmap bitmapArc2;
+    private Bitmap bitmapArc3;
+    //从外到内的三个圆弧的半径（和View宽度的百分比）
+    private float arcR1 = 0.75f;
+    private float arcR2 = 0.7f;
+    private float arcR3 = 0.34f;
+    //圆弧的长度起点
+    private int arcStart = -135;
+    //圆弧的长度终点
+    private int arcEnd = 90;
+    //圆弧的宽度
+    private float arcZ = 30;
+    private float arcZa = 0.04f;
+    //旋转的角度
+    private float rotateAngle = 0;
+    //旋转速度
+    private int rotateSpeed = 3;
 
+    private boolean initFinish = false;
 
-    private View child1;
-    private View child2;
+    //在圆周排放的imageView的轨迹坐标
+    private PathMeasure measureImage;
+    //在圆周排放的imageView
+    private ArrayList<View> cViewList = new ArrayList<View>();
 
     public ProgressBarCircular(Context context, AttributeSet attrs) {
         super(context, attrs);
         setAttributes(attrs);
     }
 
-    // Set atributtes of XML to View
     protected void setAttributes(AttributeSet attrs) {
 
         setMinimumHeight(dpToPx(32));
-
         setMinimumWidth(dpToPx(32));
 
-        //Set background Color
-        // Color by resource
-        int bacgroundColor = attrs.getAttributeResourceValue(ANDROIDXML, "background", -1);
-        if (bacgroundColor != -1) {
-            setBackgroundColor(getResources().getColor(bacgroundColor));
+        int backgroundColor = attrs.getAttributeResourceValue(ANDROID_XML, "background", -1);
+        if (backgroundColor != -1) {
+            setBackgroundColor(getResources().getColor(backgroundColor));
         } else {
-            // Color by hexadecimal
-            int background = attrs.getAttributeIntValue(ANDROIDXML, "background", -1);
+            int background = attrs.getAttributeIntValue(ANDROID_XML, "background", -1);
             if (background != -1)
                 setBackgroundColor(background);
             else
-                setBackgroundColor(Color.parseColor("#1E88E5"));
+                setBackgroundColor(Color.parseColor("#FFFD6859"));
         }
-
-        setMinimumHeight(dpToPx(3));
     }
 
     private void init() {
-        if (getChildCount() >= 2) {
-            child1 = getChildAt(0);
-            child2 = getChildAt(1);
+        arcZ = getWidth() * arcZa;
+        if (arcZ < dpToPx(15)) {
+            arcZ = dpToPx(15);
         }
-    }
+        if (getChildCount() >= 1) {
+            View view = getChildAt(0);
+            ViewGroup.LayoutParams params = view.getLayoutParams();
+            params.width =  (int)(getWidth() * arcR3  - (arcZ) * 2);
+            params.height = (int)(getHeight() * arcR3 - (arcZ) * 2);
+        }
 
-    private int dpToPx(float dp) {
-        return DensityUtil.dip2px(getContext(), dp);
+        cViewList.clear();
+        for (int i = 1; i < getChildCount(); i++) {
+            View view = getChildAt(i);
+            view.setVisibility(INVISIBLE);
+            cViewList.add(view);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        drawSecondAnimation(canvas);
-        invalidate();
-
+        try {
+            drawFrame(canvas);
+            invalidate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-
-    private int arcO = -135;
-    private int arcD = 90;
-    private float rotateAngle = 0;
-
-    private float r1 = 1;
-    private float r2 = 0.98f;
-    private float r3 = 0.5f;
-    private float arcZ = 10;
-
-    int x1;
-    int x2;
-
-    private Bitmap bitmap1;
-    private Bitmap bitmap2;
-    private Bitmap bitmap3;
-
     Path orbit;
-    PathMeasure measure;
-
     /**
-     * Draw second animation of view
+     * Draw animation of view
      *
      * @param canvas
      */
-    private void drawSecondAnimation(Canvas canvas) {
+    private void drawFrame(Canvas canvas) {
 
-        if (orbit == null) {
+        if (!initFinish) {
             init();
+            initFinish = true;
+        }
+        if (measureImage == null) {
             orbit = new Path();
             orbit.addCircle(canvas.getWidth() / 2,
                     canvas.getHeight() / 2,
-                    canvas.getWidth() / 2 - dpToPx(30),
+                    canvas.getWidth() / 2 * arcR2,
                     Path.Direction.CW);
 
-            measure = new PathMeasure(orbit, false);
+            measureImage = new PathMeasure(orbit, false);
 
+            Random random  = new Random();
+            int start = Math.abs(random.nextInt() % (int)measureImage.getLength());
+            int position = 0, i = 0;
+            for (View view : cViewList) {
+                if (position < measureImage.getLength() - (arcZ * 3.6f)) {
+                    float[] coords = new float[]{0f, 0f};
+                    measureImage.getPosTan((start + position) % (int) measureImage.getLength(),
+                            coords, null);
+
+                    view.setX((int) coords[0] - (arcZ * 3.6f) / 2 + i * dpToPx(5));
+                    view.setY((int) coords[1] - (arcZ * 3.6f) / 2 + i * dpToPx(5));
+                    ViewGroup.LayoutParams params = view.getLayoutParams();
+                    params.width  = (int)(arcZ * 3.6f);
+                    params.height = (int)(arcZ * 3.6f);
+                } else {
+                    ViewGroup.LayoutParams params = view.getLayoutParams();
+                    params.width  = 0;
+                    params.height = 0;
+                }
+
+                position += (arcZ * 3.6f) * 3;
+                i++;
+                i = i > 3 ? 0 : i;
+            }
         }
 
-        x1+=10;
-        x1 = x1 % (int)measure.getLength();
-        x2 = (x1 + 150) % (int)measure.getLength();
-        float[] coords1 = new float[] {0f, 0f};
-        measure.getPosTan(x1, coords1, null);
-        child1.setX(coords1[0] - dpToPx(50) / 2);
-        child1.setY(coords1[1] - dpToPx(50) / 2);
-
-        float[] coords2 = new float[] {0f, 0f};
-        measure.getPosTan(x2, coords2, null);
-        child2.setX(coords2[0] - dpToPx(50) / 2);
-        child2.setY(coords2[1] - dpToPx(50) / 2);
-
-
-        if (bitmap1 == null) {
-            float width = canvas.getWidth() * r1;
-            float height = canvas.getHeight() * r1;
-            bitmap1 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
-            Canvas temp = new Canvas(bitmap1);
+        if (bitmapArc1 == null) {
+            float width = canvas.getWidth() * arcR1;
+            float height = canvas.getHeight() * arcR1;
+            bitmapArc1 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
+            Canvas temp = new Canvas(bitmapArc1);
             Paint paint = new Paint();
             paint.setAntiAlias(true);
-            paint.setColor(0xffe6e6e6);
+            paint.setColor(backgroundColorGray);
             temp.drawArc(new RectF(0, 0, width, height), 0, 360, true, paint);
-            paint.setColor(backgroundColor);
-            temp.drawArc(new RectF(0, 0, width, height), arcO, arcD * 2, true, paint);
+            paint.setColor(backgroundColorPrimy);
+            temp.drawArc(new RectF(0, 0, width, height), arcStart, arcEnd * 2, true, paint);
             Paint transparentPaint = new Paint();
             transparentPaint.setAntiAlias(true);
-            transparentPaint.setColor(getResources().getColor(android.R.color.holo_blue_bright));
+            transparentPaint.setColor(getResources().getColor(android.R.color.transparent));
             transparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            temp.drawCircle(width / 2, height / 2, (width / 2) - dpToPx(1), transparentPaint);
+            temp.drawCircle(width / 2, height / 2, (width / 2) - dpToPx(2), transparentPaint);
         }
 
-        if (bitmap2 == null) {
-            float width = canvas.getWidth() * r2;
-            float height = canvas.getHeight() * r2;
-            bitmap2 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
-            Canvas temp = new Canvas(bitmap2);
+        if (bitmapArc2 == null) {
+            float width = canvas.getWidth() * arcR2;
+            float height = canvas.getHeight() * arcR2;
+            bitmapArc2 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
+            Canvas temp = new Canvas(bitmapArc2);
             Paint paint = new Paint();
             paint.setAntiAlias(true);
-            paint.setColor(0xffe6e6e6);
+            paint.setColor(backgroundColorGray);
             temp.drawArc(new RectF(0, 0, width, height), 0, 360, true, paint);
             paint.setColor(backgroundColor);
-            temp.drawArc(new RectF(0, 0, width, height), arcO, arcD, true, paint);
+            temp.drawArc(new RectF(0, 0, width, height), arcStart, arcEnd, true, paint);
             Paint transparentPaint = new Paint();
             transparentPaint.setAntiAlias(true);
-            transparentPaint.setColor(getResources().getColor(android.R.color.holo_blue_bright));
+            transparentPaint.setColor(getResources().getColor(android.R.color.transparent));
             transparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            temp.drawCircle(width / 2, height / 2, (width / 2) - dpToPx(arcZ), transparentPaint);
+            temp.drawCircle(width / 2, height / 2, (width / 2) - (arcZ), transparentPaint);
         }
 
-        if (bitmap3 == null) {
-            float width = canvas.getWidth() * r3;
-            float height = canvas.getHeight() * r3;
-            bitmap3 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
-            Canvas temp = new Canvas(bitmap3);
+        if (bitmapArc3 == null) {
+            float width = canvas.getWidth() * arcR3;
+            float height = canvas.getHeight() * arcR3;
+            bitmapArc3 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
+            Canvas temp = new Canvas(bitmapArc3);
             Paint paint = new Paint();
             paint.setAntiAlias(true);
-            paint.setColor(0xffe6e6e6);
+            paint.setColor(backgroundColorGray);
             temp.drawArc(new RectF(0, 0, width, height), 0, 360, true, paint);
             paint.setColor(backgroundColor);
-            temp.drawArc(new RectF(0, 0, width, height), arcO, arcD, true, paint);
+            temp.drawArc(new RectF(0, 0, width, height), arcStart, arcEnd, true, paint);
             Paint transparentPaint = new Paint();
             transparentPaint.setAntiAlias(true);
-            transparentPaint.setColor(getResources().getColor(android.R.color.holo_blue_bright));
+            transparentPaint.setColor(getResources().getColor(android.R.color.transparent));
             transparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            temp.drawCircle(width / 2, height / 2, (width / 2) - dpToPx(arcZ), transparentPaint);
+            temp.drawCircle(width / 2, height / 2, (width / 2) - (arcZ), transparentPaint);
         }
 
         if (rotateAngle > 45 && rotateAngle < 225) {
-            rotateAngle += 10;
+            rotateAngle += rotateSpeed * 3;
         } else {
-            rotateAngle += 5;
+            rotateAngle += rotateSpeed;
         }
         rotateAngle = rotateAngle % 360;
 
-        canvas.save();
-        canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-        canvas.drawBitmap(bitmap1, getWidth() * (1 - r1) / 2, getHeight() * (1 - r1) / 2, new Paint());
-        canvas.restore();
+        if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
+            canvas.save();
+            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
+            canvas.drawBitmap(bitmapArc1, getWidth() * (1 - arcR1) / 2, getHeight() * (1 - arcR1) / 2, new Paint());
+            canvas.restore();
+        }
 
-        canvas.save();
-        canvas.rotate(rotateAngle, getWidth() / 2, getHeight() / 2);
-        canvas.drawBitmap(bitmap2, getWidth() * (1 - r2) / 2, getHeight() * (1 - r2) / 2, new Paint());
-        canvas.restore();
+        if (bitmapArc2 != null && !bitmapArc2.isRecycled()) {
+            canvas.save();
+            canvas.rotate(rotateAngle, getWidth() / 2, getHeight() / 2);
+            canvas.drawBitmap(bitmapArc2, getWidth() * (1 - arcR2) / 2, getHeight() * (1 - arcR2) / 2, new Paint());
+            canvas.restore();
+        }
 
-        canvas.save();
-        canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-        canvas.drawBitmap(bitmap3, getWidth() * (1 - r3) / 2, getWidth() * (1 - r3) / 2, new Paint());
-        canvas.restore();
+        if (bitmapArc3 != null && !bitmapArc3.isRecycled()) {
+            canvas.save();
+            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
+            canvas.drawBitmap(bitmapArc3, getWidth() * (1 - arcR3) / 2, getWidth() * (1 - arcR3) / 2, new Paint());
+            canvas.restore();
+        }
 
-//        Paint paint = new Paint();
-//        paint.setAntiAlias(true);
-//        paint.setColor(getResources().getColor(android.R.color.holo_blue_bright));
-        //canvas.drawPath(orbit, paint);
     }
-
 
     public void setBackgroundColor(int color) {
         super.setBackgroundColor(getResources().getColor(android.R.color.transparent));
         this.backgroundColor = color;
     }
 
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if  (visibility != VISIBLE) {
+            try {
+                if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
+                    bitmapArc1.recycle();
+                    bitmapArc1 = null;
+                }
+
+                if (bitmapArc2 != null && !bitmapArc2.isRecycled()) {
+                    bitmapArc2.recycle();
+                    bitmapArc2 = null;
+                }
+
+                if (bitmapArc3 != null && !bitmapArc3.isRecycled()) {
+                    bitmapArc3.recycle();
+                    bitmapArc3 = null;
+                }
+
+                if (measureImage != null) {
+                    measureImage = null;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            for (View view : cViewList) {
+                view.clearAnimation();
+                view.setVisibility(INVISIBLE);
+            }
+        }
+    }
+
+    public void showCircleView() {
+        if (measureImage != null) {
+            int i = 1;
+            int duration = 300;
+            for(final View view : cViewList) {
+                view.setScaleX(0);
+                view.setScaleY(0);
+                view.setVisibility(VISIBLE);
+
+                PropertyValuesHolder scaleX = PropertyValuesHolder.ofFloat("scaleX", 0, 1);
+                PropertyValuesHolder scaleY = PropertyValuesHolder.ofFloat("scaleY", 0, 1);
+                ObjectAnimator listObjectAnimator
+                        = ObjectAnimator.ofPropertyValuesHolder(view, scaleX, scaleY);
+                listObjectAnimator.setDuration(duration + duration * i);
+                listObjectAnimator.setInterpolator(new OvershootInterpolator(3.0f));
+                listObjectAnimator.setStartDelay(duration * i);
+                listObjectAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        if (mListener  != null) {
+                            mListener.onEnd();
+                        }
+                    }
+                });
+                listObjectAnimator.start();
+                i++;
+            }
+        }
+    }
+
+    private IOnShowViewEndListener mListener;
+
+    public void setOnCardItemOnClickListener(IOnShowViewEndListener listener) {
+        mListener = listener;
+    }
+    public interface IOnShowViewEndListener {
+        void onEnd();
+    }
+
+    private int dpToPx(float dp) {
+        return DensityUtil.dip2px(getContext(), dp);
+    }
 }

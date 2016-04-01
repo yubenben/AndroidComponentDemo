@@ -7,9 +7,13 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.ran.ben.androidcomponentdemo.R;
+import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
+import com.ran.ben.androidcomponentdemo.view.ProgressBarCircular;
 
 public class CicrcleProgressActivity extends AppCompatActivity {
 
@@ -19,6 +23,11 @@ public class CicrcleProgressActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cicrcle_progress);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        final ProgressBarCircular progress = (ProgressBarCircular) findViewById(R.id.progress_bar);
+        ViewGroup.LayoutParams params = progress.getLayoutParams();
+        params.width  = (int) (DensityUtil.gettDisplayWidth(this));
+        params.height = (int) (DensityUtil.gettDisplayWidth(this));
 
         SimpleDraweeView mImage = (SimpleDraweeView) findViewById(R.id.image);
         mImage.setImageURI(
@@ -32,14 +41,18 @@ public class CicrcleProgressActivity extends AppCompatActivity {
         mImage3.setImageURI(
                 Uri.parse("http://b.hiphotos.baidu.com/image/h%3D300/sign=592f8030ac18972bbc3a06cad6cd7b9d/267f9e2f0708283896096030bf99a9014c08f18a.jpg"));
 
-        final View progress = findViewById(R.id.progress_bar);
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (progress.getVisibility() != View.VISIBLE) {
                     progress.setVisibility(View.VISIBLE);
+                    progress.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            progress.showCircleView();
+                        }
+                    },  1000);
                 } else {
                     progress.setVisibility(View.GONE);
                 }
