@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.ran.ben.androidcomponentdemo.R;
@@ -51,7 +52,7 @@ public class CardFragment extends Fragment {
         cardSwitchListener = new CardSwitchListener() {
 
             @Override
-            public void onShow(int index) {
+            public void onShow(AdapterView<?> parent, int index) {
                 CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
                 if (item != null) {
                     Log.d("CardFragment", "正在显示-" + item.userName);
@@ -59,7 +60,7 @@ public class CardFragment extends Fragment {
             }
 
             @Override
-            public void onCardVanish(int index, int type) {
+            public void onCardVanish(AdapterView<?> parent, View view, int index, int flyType, int type) {
                 CardDataItem item  = (CardDataItem) mCardAdapter.getItem(index);
                 if (item != null) {
                     Log.d("CardFragment", "正在消失-" + item.userName + " 消失type=" + type);

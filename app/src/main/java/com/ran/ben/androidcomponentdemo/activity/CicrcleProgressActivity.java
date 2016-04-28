@@ -50,7 +50,12 @@ public class CicrcleProgressActivity extends AppCompatActivity {
                     progress.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            progress.showCircleView();
+                            progress.showCircleView(new ProgressBarCircular.IOnShowViewEndListener() {
+                                @Override
+                                public void onEnd() {
+
+                                }
+                            });
                         }
                     },  1000);
                 } else {

@@ -5,12 +5,19 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 
@@ -23,36 +30,39 @@ import java.util.List;
 /**
  * 卡片滑动面板，主要逻辑实现类
  */
-public class
-        CardSlidePanel extends RelativeLayout {
+public class CardSlidePanel extends RelativeLayout {
     private static final String TAG = "CardSlidePanel";
-    private static final boolean DEBUG = false;
+    public static final boolean DEBUG = false;
     private static final boolean ROTATION_ENABLE = true;
 
-    private List<View> viewList = new ArrayList<>(); // 存放的是每一层的view，从顶到底
-    private List<View> releasedViewList = new ArrayList<>(); // 手指松开后存放的view列表
+    private List<View> viewList = new ArrayList<View>(); // 存放的是每一层的view，从顶到底
+    private List<View> releasedViewList = new ArrayList<View>(); // 手指松开后存放的view列表
 
-    private CardAdapterView mCardAdapterView;  //卡片列表
+    private CardAdapterView mCardAdapterView;  //卡片列表,使用adapterView实现复用
+    private View mTopLike; //喜欢标记
+    private View mTopIgnore; //无感标记
 
-    /* 拖拽工具类 */
     private ViewDragHelper mDragHelper; // 这个跟原生的ViewDragHelper差不多，我仅仅只是修改了Interpolator
-    private int initCenterViewX = 0, initCenterViewY = 0; // 最初时，中间View的x位置,y位置
+    private GestureDetectorCompat moveDetector;
+
+    private int initCenterViewX = 0, initCenterViewY = 0; // 最初时，中间View的x位置,y位置 onLayout会赋值
     private int allWidth = 0; // 面板的宽度
     private int allHeight = 0; // 面板的高度
     private int childWith = 0; // 每一个子View对应的宽度
-    //触摸到卡片的下半部分
-    private boolean touchOnBottom;
 
+    //触摸到卡片的半部分，上半部分时旋转角度大
+    private boolean touchOnBottom;
+    private boolean touchOnTop;
+
+    public final static int MAX_VIEW_SIZE = 4; //同时存在的卡片数量
     private static final float SCALE_STEP = 0.08f; // view叠加缩放的步长
-    private static final int MAX_SLIDE_DISTANCE_LINKAGE = 400; // 水平距离+垂直距离
-    // 超过这个值
-    // 则下一层view完成向上一层view的过渡
+    private static final int MAX_SLIDE_DISTANCE_LINKAGE = 400; // 水平距离+垂直距离，超过这个值则下一层view完成向上一层view的过渡
+    private int yOffsetStep = 40; // view叠加垂直偏移量的步长
     private View bottomLayout; // 卡片下边的三个按钮布局
 
-    private int yOffsetStep = 40; // view叠加垂直偏移量的步长
-
-    private static final int X_VEL_THRESHOLD = 900;
-    private static final int X_DISTANCE_THRESHOLD = 300;
+    private static final int X_VEL_THRESHOLD = 1000; //手指滑动加速度小于这个的时候卡片回到中心，否则滑走。
+    private int mFlingSlop = 100;  //快速滑动时滑动距离小于这个值则回到中心
+    private int mLikeSlop;   //卡片超过这个值时，送卡卡片则滑走
 
     public static final int VANISH_TYPE_LEFT = 0;
     public static final int VANISH_TYPE_RIGHT = 1;
@@ -60,10 +70,11 @@ public class
     private final Object objLock = new Object();
 
     private CardSwitchListener cardSwitchListener; // 回调接口
-    private int showingPosition = 0; // 当前正在显示的小项
+    private int showingPosition = 0; // 当前顶部卡片的下标值
+
     private View leftBtn, rightBtn;
     private boolean btnLock = false;
-    private GestureDetectorCompat moveDetector;
+    private boolean needRefresh = false; //卡片正在处理中不更新数据
 
     public CardSlidePanel(Context context) {
         this(context, null);
@@ -75,13 +86,26 @@ public class
 
     public CardSlidePanel(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.card);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SlideCard);
 
-        yOffsetStep = (int) a.getDimension(R.styleable.card_yOffsetStep, yOffsetStep);
+        yOffsetStep = (int) a.getDimension(R.styleable.SlideCard_yOffsetStep, yOffsetStep);
         a.recycle();
 
         moveDetector = new GestureDetectorCompat(context,
                 new MoveDetector());
+
+        //根据手机屏幕初始化滑动边界
+        mLikeSlop = getDisplayWidth(context) / 5;
+        mFlingSlop = ViewConfiguration.get(getContext()).getScaledMinimumFlingVelocity() / 2;
+        setLayerType(LAYER_TYPE_HARDWARE, null);
+    }
+
+    public static int getDisplayWidth(Context ctx){
+        DisplayMetrics metric = new DisplayMetrics();
+        WindowManager winManager = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+        winManager.getDefaultDisplay().getMetrics(metric);
+        int width = metric.widthPixels; // 屏幕宽度（像素）
+        return width;
     }
 
     public ListAdapter getAdapter() {
@@ -94,25 +118,103 @@ public class
         ensureFull();
 
         if (null != cardSwitchListener) {
-            cardSwitchListener.onShow(0);
+            cardSwitchListener.onShow(mCardAdapterView, 0);
         }
 
         requestLayout();
     }
 
-    private final static int MAX_VIEW_SIZE = 4;
+    public boolean isEmpty() {
+        return (mCardAdapterView == null || mCardAdapterView.getAdapter() == null || showingPosition >= mCardAdapterView.getAdapter().getCount());
+    }
 
+    public int getCurrentViewId() {
+        return showingPosition;
+    }
+
+    /*
+    * 重新加载卡片到viewList
+    * */
     private void ensureFull() {
         if (DEBUG) {
             Log.d(TAG, "ensureFull");
         }
         viewList.clear();
-        for (int i = 0; i < MAX_VIEW_SIZE; i++) {
-            View viewItem = mCardAdapterView.getAdapter().getView(i, null, mCardAdapterView);
-            mCardAdapterView.addViewInLayout(viewItem, i);
+        for (int i = 0; i < MAX_VIEW_SIZE && i + showingPosition < mCardAdapterView.getAdapter().getCount(); i++) {
+            View viewItem = mCardAdapterView.getAdapter().getView(i + showingPosition, null, mCardAdapterView);
+            viewItem.setLayerType(LAYER_TYPE_HARDWARE, null);
+            mCardAdapterView.addViewInLayout(viewItem, i + showingPosition);
             viewList.add(viewItem);
         }
+        mCardAdapterView.requestLayout();
     }
+
+    /*
+    * 在adapter 的onInvalidated中调用清除掉当前存在的卡片
+    * */
+    void clearViewStack() {
+        viewList.clear();
+        showingPosition = 0;
+    }
+
+    /*
+    * 有新数据时会更新卡片
+    * */
+    public void refreshViewStack() {
+        if (DEBUG) {
+            Log.d(TAG, "refreshViewStack " + showingPosition);
+        }
+
+        if (releasedViewList.size() > 0) {
+            if (DEBUG) {
+                Log.d(TAG, "releasedViewList.size() = " + releasedViewList.size());
+            }
+            needRefresh = true;
+            return;
+        }
+
+        if (viewList.size() > 0) {
+
+            needRefresh = false;
+            int i = 0;
+            for (View view : viewList) {
+                if (showingPosition + i < mCardAdapterView.getAdapter().getCount()) {
+                    if (View.VISIBLE != view.getVisibility()) {
+                        view.setVisibility(View.VISIBLE);
+                        try {
+                            mCardAdapterView.getAdapter().getView(showingPosition + i,
+                                    view, mCardAdapterView);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                i++;
+            }
+
+            if (viewList.size() >= MAX_VIEW_SIZE) {
+                return;
+            }
+
+            while (i < MAX_VIEW_SIZE && showingPosition + i  <  mCardAdapterView.getAdapter().getCount()) {
+                View viewItem = mCardAdapterView.getAdapter().getView(showingPosition + i, null, mCardAdapterView);
+                viewItem.setLayerType(LAYER_TYPE_HARDWARE, null);
+                mCardAdapterView.addViewInLayout(viewItem, showingPosition + i);
+                viewList.add(viewItem);
+                i++;
+            }
+
+            requestLayout();
+        } else {
+            ensureFull();
+            if (null != cardSwitchListener) {
+                cardSwitchListener.onShow(mCardAdapterView, 0);
+            }
+
+            requestLayout();
+        }
+    }
+
 
     @Override
     protected void onFinishInflate() {
@@ -141,6 +243,7 @@ public class
         }
     }
 
+    //初始化底部三个按钮，我们现在没有使用
     private void initBottomLayout() {
         if (DEBUG) {
             Log.d(TAG, "initBottomLayout");
@@ -204,18 +307,20 @@ public class
             // 如果数据List为空，或者子View不可见，则不予处理
             if (child == bottomLayout || mCardAdapterView == null ||
                     mCardAdapterView.getAdapter() == null || mCardAdapterView.getAdapter().getCount() == 0
-                    || child.getVisibility() != View.VISIBLE || child.getScaleX() <= 1.0f - SCALE_STEP) {
+                    || child.getVisibility() != View.VISIBLE || child.getScaleX() <= 1.0f - SCALE_STEP
+                    || showingPosition >= mCardAdapterView.getAdapter().getCount()
+                    || mCardAdapterView.getAdapter().getItemViewType(showingPosition) < 0) {
                 // 一般来讲，如果拖动的是第三层、或者第四层的View，则直接禁止
                 // 此处用getScale的用法来巧妙回避
                 if (DEBUG) {
-                    Log.d(TAG, "tryCaptureView: return false");
+                    Log.e(TAG, "tryCaptureView: return false");
                 }
                 return false;
             }
 
             if (btnLock) {
                 if (DEBUG) {
-                    Log.d(TAG, "tryCaptureView: return false");
+                    Log.e(TAG, "tryCaptureView: return false btnLock");
                 }
                 return false;
             }
@@ -224,7 +329,15 @@ public class
             int childIndex = viewList.indexOf(child);
             if (childIndex > 0) {
                 if (DEBUG) {
-                    Log.d(TAG, "tryCaptureView: return false");
+                    Log.e(TAG, "tryCaptureView: return false childIndex = " + childIndex);
+                }
+
+                try {
+                    if (mDragHelper.smoothSlideViewTo(viewList.get(0), initCenterViewX, initCenterViewY)) {
+                        ViewCompat.postInvalidateOnAnimation(CardSlidePanel.this);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 return false;
             }
@@ -238,7 +351,12 @@ public class
         @Override
         public int getViewHorizontalDragRange(View child) {
             // 这个用来控制拖拽过程中松手后，自动滑行的速度
-            return 20;
+            return 256;
+        }
+
+        @Override
+        public int getViewVerticalDragRange(View child) {
+            return 256;
         }
 
         @Override
@@ -273,7 +391,8 @@ public class
             }
 
             if (DEBUG) {
-                Log.d(TAG, "orderViewStack");
+                Log.d(TAG, "orderViewStack position=" + showingPosition
+                        + "releasedViewList size=" + releasedViewList.size());
             }
 
             // 1. 消失的卡片View位置重置，由于大多手机会重新调用onLayout函数，所以此处大可以不做处理，不信你注释掉看看
@@ -287,6 +406,12 @@ public class
             //add by yubenben for rotation back
             if (ROTATION_ENABLE) {
                 changedView.setRotation(0);
+            }
+            if (mTopLike != null) {
+                mTopLike.setAlpha(0);
+            }
+            if (mTopIgnore != null) {
+                mTopIgnore.setAlpha(0);
             }
 
             // 2. 卡片View在ViewGroup中的顺次调整
@@ -302,43 +427,86 @@ public class
                 if (changedView.getVisibility() != View.VISIBLE) {
                     changedView.setVisibility(View.VISIBLE);
                 }
-                mCardAdapterView.getAdapter().getView(newIndex, changedView, mCardAdapterView);
-            } else {
-                changedView.setVisibility(View.INVISIBLE);
-                if (newIndex >= mCardAdapterView.getAdapter().getCount() - 3) {
-                    if (mOnLastItemVisible != null) {
-                        mOnLastItemVisible.onVisible();
-                    }
+
+                CardAdapterView.LayoutParams params  =
+                        (CardAdapterView.LayoutParams) changedView.getLayoutParams();
+                if  (DEBUG) {
+                    Log.i(TAG, "orderViewStack: params.viewType=" + params.viewType);
+                    Log.i(TAG, "orderViewStack: newIndex + " + newIndex + " itemViewType=" +
+                            mCardAdapterView.getAdapter().getItemViewType(newIndex));
                 }
+                if (params.viewType == mCardAdapterView.getAdapter().getItemViewType(newIndex)) {
+                    try {
+                        mCardAdapterView.getAdapter().getView(newIndex, changedView, mCardAdapterView);
+                        // 4. viewList中的卡片view的位次调整
+                        viewList.remove(changedView);
+                        viewList.add(changedView);
+                        releasedViewList.remove(0);
+                    } catch (ClassCastException e) {
+                        e.printStackTrace();
+                        changedView.setVisibility(GONE);
+                        mCardAdapterView.removeViewInLayout(changedView);
+                        viewList.remove(changedView);
+                        View viewItem = mCardAdapterView.getAdapter().getView(newIndex, null, mCardAdapterView);
+                        viewItem.setLayerType(LAYER_TYPE_HARDWARE, null);
+                        mCardAdapterView.addViewInLayout(viewItem, newIndex);
+                        viewList.add(viewItem);
+                        releasedViewList.remove(0);
+                        requestLayout();
+                    }
+                }else {
+                    changedView.setVisibility(GONE);
+                    mCardAdapterView.removeViewInLayout(changedView);
+                    viewList.remove(changedView);
+                    View viewItem = mCardAdapterView.getAdapter().getView(newIndex, null, mCardAdapterView);
+                    viewItem.setLayerType(LAYER_TYPE_HARDWARE, null);
+                    mCardAdapterView.addViewInLayout(viewItem, newIndex);
+                    viewList.add(viewItem);
+                    releasedViewList.remove(0);
+                    requestLayout();
+                }
+            } else {
+                changedView.setVisibility(View.GONE);
+                // 4. viewList中的卡片view的位次调整
+//                viewList.remove(changedView);
+//                viewList.add(changedView);
+//                releasedViewList.remove(0);
+                viewList.remove(changedView);
+                releasedViewList.remove(changedView);
+                mCardAdapterView.removeViewInLayout(changedView);
             }
 
-            // 4. viewList中的卡片view的位次调整
-            viewList.remove(changedView);
-            viewList.add(changedView);
-            releasedViewList.remove(0);
+            if (newIndex >= mCardAdapterView.getAdapter().getCount() - 3) {
+                if (mOnLastItemVisible != null) {
+                    mOnLastItemVisible.onVisible();
+                }
+            }
 
             // 5. 更新showIndex、接口回调
             showingPosition++;
             if (showingPosition < mCardAdapterView.getAdapter().getCount()) {
                 if (null != cardSwitchListener) {
-                    cardSwitchListener.onShow(showingPosition);
+                    cardSwitchListener.onShow(mCardAdapterView, showingPosition);
+                }
+            } else {
+                setVisibility(GONE);
+            }
+
+            if (viewList.size() > 0) {
+                View topView = viewList.get(0);
+                mTopLike = topView.findViewById(R.id.like_btn);
+                if (mTopLike != null) {
+                    mTopLike.setAlpha(0);
+                }
+                mTopIgnore = topView.findViewById(R.id.ignore_btn);
+                if (mTopIgnore != null) {
+                    mTopIgnore.setAlpha(0);
                 }
             }
-        }
-    }
 
-    public void refreshViewStack() {
-        if (DEBUG) {
-            Log.d(TAG, "refreshViewStack");
-        }
-        int i = 0;
-        for (View view : viewList) {
-            if (View.VISIBLE != view.getVisibility()) {
-                view.setVisibility(View.VISIBLE);
-                mCardAdapterView.getAdapter().getView(showingPosition + i,
-                        view, mCardAdapterView);
+            if (needRefresh) {
+                refreshViewStack();
             }
-            i++;
         }
     }
 
@@ -376,26 +544,39 @@ public class
         //add by yubenben for rotation
         if (ROTATION_ENABLE) {
             if (touchOnBottom) {
-                float rotation = Math.copySign(Math.abs((float)changeViewLeft - initCenterViewX) / 50, initCenterViewX - changeViewLeft);
+                float rotation = Math.copySign(Math.abs((float) changeViewLeft - initCenterViewX)
+                        * 15  / getWidth(), initCenterViewX - changeViewLeft);
                 if (DEBUG) {
-                    Log.d(TAG, "processLinkageView: rotation = " + rotation);
+                    Log.d(TAG, "bottom processLinkageView: rotation = " + rotation);
                 }
                 changedView.setRotation(Math.abs(rotation) < 45 ? rotation : Math.copySign(45, rotation));
 
-            } else {
-                float rotation = Math.copySign(Math.abs((float)changeViewLeft - initCenterViewX) / 25, changeViewLeft - initCenterViewX);
+            } else if(touchOnTop) {
+                float rotation = Math.copySign(Math.abs((float) changeViewLeft - initCenterViewX)
+                        * 30  / getWidth(), changeViewLeft - initCenterViewX);
                 if (DEBUG) {
                     Log.d(TAG, "processLinkageView: rotation = " + rotation);
                 }
                 changedView.setRotation(Math.abs(rotation) < 45 ? rotation : Math.copySign(45, rotation));
             }
         }
+
+        float alpha = ((float) changeViewLeft - initCenterViewX) / mLikeSlop;
+        if (DEBUG) {
+            Log.d(TAG, "processLinkageView: alpha = "  + alpha);
+        }
+        if (mTopLike != null) {
+            mTopLike.setAlpha(alpha > 0 ? alpha : 0);
+        }
+        if (mTopIgnore != null) {
+            mTopIgnore.setAlpha(alpha < 0 ? -alpha : 0);
+        }
     }
 
     // 由index对应view变成index-1对应的view
     private void ajustLinkageViewItem(View changedView, float rate, int index) {
         if (DEBUG) {
-            Log.d(TAG, "ajustLinkageViewItem: rate="+ rate +  "  index=" + index);
+            Log.d(TAG, "ajustLinkageViewItem: rate=" + rate + "  index=" + index);
         }
         int changeIndex = viewList.indexOf(changedView);
         int initPosY = yOffsetStep * index;
@@ -407,6 +588,9 @@ public class
         int offset = (int) (initPosY + (nextPosY - initPosY) * rate);
         float scale = initScale + (nextScale - initScale) * rate;
 
+        if (changeIndex  + index >= viewList.size()) {
+            return;
+        }
         View ajustView = viewList.get(changeIndex + index);
         ajustView.offsetTopAndBottom(offset - ajustView.getTop()
                 + initCenterViewY);
@@ -420,9 +604,17 @@ public class
      * @param xvel X方向上的滑动速度
      */
     private void animToSide(View changedView, float xvel, float yvel) {
+
         if (DEBUG) {
-            Log.d(TAG, "animToSide: xvel=" + xvel + " yvel=" + yvel);
+            int  index  = viewList.indexOf(changedView);
+            Log.w(TAG, "animToSide: changedView visible=" + changedView.getVisibility() +
+                    ", in viewList  index=" + index);
         }
+
+        if (changedView.getVisibility() != View.VISIBLE) {
+            return;
+        }
+
         int finalX = initCenterViewX;
         int finalY = initCenterViewY;
         int flyType = -1;
@@ -432,17 +624,30 @@ public class
         int dy = changedView.getTop() - initCenterViewY;
         if (dx == 0) {
             // 由于dx作为分母，此处保护处理
-            dx = 1;
+            dx = (int) Math.copySign(1, xvel);
         }
-        if (xvel > X_VEL_THRESHOLD || dx > X_DISTANCE_THRESHOLD) {
+        if  (dy == 0) {
+            dy = (int) Math.copySign(100, yvel);
+        }
+        if (dx > mLikeSlop || (xvel > X_VEL_THRESHOLD && (dx > mFlingSlop || dx == 1))) {
+            if (DEBUG) {
+                Log.w(TAG, "animToSide: xvel=" + xvel + " dx=" + dx + " mFlingSlop=" + mFlingSlop);
+            }
             finalX = allWidth * 3 / 2;
             finalY = dy * (childWith + initCenterViewX) / dx + initCenterViewY;
             flyType = VANISH_TYPE_RIGHT;
-        } else if (xvel < -X_VEL_THRESHOLD || dx < -X_DISTANCE_THRESHOLD) {
+        } else if (dx < -mLikeSlop || (xvel < -X_VEL_THRESHOLD && (dx < -mFlingSlop || dx == -1))) {
+            if (DEBUG) {
+                Log.w(TAG, "animToSide: xvel=" + xvel + " dx=" + dx  + " mFlingSlop=" + mFlingSlop);
+            }
             finalX = -childWith * 3 / 2;
             finalY = dy * (childWith + initCenterViewX) / (-dx) + dy
                     + initCenterViewY;
             flyType = VANISH_TYPE_LEFT;
+        } else {
+            if (DEBUG) {
+                Log.e(TAG, "animToSide: xvel=" + xvel + " dx=" + dx  + " mFlingSlop=" + mFlingSlop);
+            }
         }
 
         // 如果斜率太高，就折中处理
@@ -454,53 +659,76 @@ public class
 
         // 如果没有飞向两侧，而是回到了中间，需要谨慎处理
         if (finalX != initCenterViewX) {
+            if (DEBUG) {
+                Log.e(TAG, "releasedViewList add");
+            }
             releasedViewList.add(changedView);
         }
 
         // 2. 启动动画
-        if (mDragHelper.smoothSlideViewTo(changedView, finalX, finalY)) {
-            ViewCompat.postInvalidateOnAnimation(this);
+        if (finalX != initCenterViewX) {
+
+            if (mDragHelper.smoothSlideViewTo(changedView, finalX, finalY)) {
+                ViewCompat.postInvalidateOnAnimation(this);
+            }
+        } else {
+            if (mDragHelper.smoothSlideViewToOvershoot(changedView, finalX, finalY)) {
+                ViewCompat.postInvalidateOnAnimation(this);
+            }
         }
 
 
         // 3. 消失动画即将进行，listener回调
         if (flyType >= 0 && cardSwitchListener != null) {
-            cardSwitchListener.onCardVanish(showingPosition, flyType);
+            cardSwitchListener.onCardVanish(mCardAdapterView, changedView, showingPosition,
+                    flyType, 0);
         }
     }
 
     /**
      * 点击按钮消失动画
      */
-    public void vanishOnBtnClick(int type) {
+    public void vanishOnBtnClick(int flyType, int type) {
         synchronized (objLock) {
             if (DEBUG) {
-                Log.d(TAG, "vanishOnBtnClick: type=" + type);
-            }
-            View animateView = viewList.get(0);
-            if (animateView.getVisibility() != View.VISIBLE || releasedViewList.contains(animateView)) {
-                return;
+                Log.d(TAG, "vanishOnBtnClick: type=" + flyType);
             }
 
-            int finalX = 0;
-            if (type == VANISH_TYPE_LEFT) {
-                finalX = -childWith * 3 / 2;
-            } else if (type == VANISH_TYPE_RIGHT) {
-                finalX = allWidth * 3 / 2;
-            }
+            if (viewList.size() > 0) {
+                View animateView = viewList.get(0);
+                if (animateView.getVisibility() != View.VISIBLE || releasedViewList.contains(animateView)) {
+                    return;
+                }
 
-            if (finalX != 0) {
-                touchOnBottom = false;
-                releasedViewList.add(animateView);
-                if (mDragHelper.smoothSlideViewTo(animateView, finalX, initCenterViewY)) {
-                    ViewCompat.postInvalidateOnAnimation(this);
+                int finalX = 0;
+                if (flyType == VANISH_TYPE_LEFT) {
+                    finalX = -childWith * 3 / 2;
+                } else if (flyType == VANISH_TYPE_RIGHT) {
+                    finalX = allWidth * 3 / 2;
+                }
+
+                if (finalX != 0) {
+                    touchOnBottom = false;
+                    touchOnTop = true;
+                    releasedViewList.add(animateView);
+                    if (mDragHelper.smoothSlideViewToAnticipateOvershoot(animateView, finalX, initCenterViewY)) {
+                        ViewCompat.postInvalidateOnAnimation(this);
+                    }
+                }
+
+                if (flyType >= 0 && cardSwitchListener != null) {
+                    cardSwitchListener.onCardVanish(mCardAdapterView, animateView,
+                            showingPosition, flyType, type);
                 }
             }
-
-            if (type >= 0 && cardSwitchListener != null) {
-                cardSwitchListener.onCardVanish(showingPosition, type);
-            }
         }
+    }
+
+    /**
+     * 点击按钮消失动画
+     */
+    public void vanishOnBtnClick(int flyType) {
+        vanishOnBtnClick(flyType, 0);
     }
 
     @Override
@@ -531,11 +759,14 @@ public class
 
             //确定手指触摸卡片的位置
             float downY = ev.getY();
-            touchOnBottom = downY >  initCenterViewY + (float)childWith / 2;
+
+            touchOnTop = downY < initCenterViewY +  (float)childWith / 4;
+            touchOnBottom = downY > initCenterViewY + (float)childWith * 3 / 4;
+
             if (DEBUG) {
                 Log.d(TAG, "onInterceptTouchEvent: downY=" + downY
                         + " initCenterViewY=" + initCenterViewY + " childWidth=" + childWith
-                        + " centerY = " + (initCenterViewY + (float)childWith / 2));
+                        + " centerY = " + (initCenterViewY + (float) childWith / 3));
             }
 
             // ACTION_DOWN的时候就对view重新排序
@@ -544,21 +775,10 @@ public class
             // 保存初次按下时arrowFlagView的Y坐标
             // action_down时就让mDragHelper开始工作，否则有时候导致异常
             mDragHelper.processTouchEvent(ev);
-        } else if (action == MotionEvent.ACTION_UP) {
-//            if (shouldIntercept && !moveFlag) {
-//                // 点击的是卡片
-//                if (null != cardSwitchListener) {
-//                    cardSwitchListener.onItemClick(showingPosition);
-//                }
-//                if (DEBUG) {
-//                    Log.d(TAG, "onInterceptTouchEvent: mDragHelper.abort()");
-//                }
-//                mDragHelper.abort();
-//            }
         }
 
         if (DEBUG) {
-            Log.d(TAG, "onInterceptTouchEvent:" + StringUtils.motionEventActionToString(action) +
+            Log.d(TAG, "onInterceptTouchEvent:" + action +
                     ", shouldIntercept = " + shouldIntercept
                     + ", moveFlag = " + moveFlag);
         }
@@ -568,7 +788,7 @@ public class
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         if (DEBUG) {
-            Log.d(TAG, "onTouchEvent:" + StringUtils.motionEventActionToString(e.getAction()));
+            Log.d(TAG, "onTouchEvent:" + e.getAction());
         }
         try {
             // 统一交给mDragHelper处理，由DragHelperCallback实现拖动效果
@@ -620,8 +840,120 @@ public class
             initCenterViewX = viewList.get(0).getLeft();
             initCenterViewY = viewList.get(0).getTop();
             childWith = viewList.get(0).getMeasuredWidth();
+
+            View topView = viewList.get(0);
+            mTopLike = topView.findViewById(R.id.like_btn);
+            mTopIgnore = topView.findViewById(R.id.ignore_btn);
         }
     }
+
+    public void leftAndRightAnimation() {
+
+        if (viewList == null || viewList.size() == 0) {
+            return;
+        }
+
+        View animateView = viewList.get(0);
+        if (animateView.getVisibility() != View.VISIBLE || releasedViewList.contains(animateView)) {
+            return;
+        }
+
+        int duration = 500;
+        RotateAnimation rotateAnimation = new RotateAnimation(0, -10,
+                Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 1);
+        rotateAnimation.setDuration(duration);
+        rotateAnimation.setRepeatCount(1);
+        rotateAnimation.setRepeatMode(Animation.REVERSE);
+
+        AnimationSet mLeftAnimationSet = new AnimationSet(true);
+        mLeftAnimationSet.setInterpolator(new LinearInterpolator());
+        //mLeftAnimationSet.addAnimation(translateAnimation);
+        mLeftAnimationSet.addAnimation(rotateAnimation);
+        mLeftAnimationSet.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                if (mTopIgnore != null) {
+                    mTopIgnore.animate()
+                            .setDuration(500)
+                            .setInterpolator(new LinearInterpolator())
+                            .alpha(1.0f);
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (mTopIgnore != null) {
+                    mTopIgnore.animate()
+                            .setDuration(250)
+                            .setInterpolator(new LinearInterpolator())
+                            .alpha(0);
+                }
+                rightAnimation();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        animateView.startAnimation(mLeftAnimationSet);
+
+    }
+
+    private void rightAnimation() {
+
+        if (viewList == null || viewList.size() == 0) {
+            return;
+        }
+
+        View animateView = viewList.get(0);
+        if (animateView.getVisibility() != View.VISIBLE || releasedViewList.contains(animateView)) {
+            return;
+        }
+
+        int duration = 500;
+        RotateAnimation rotateAnimation = new RotateAnimation(0, 10,
+                Animation.RELATIVE_TO_SELF, 1, Animation.RELATIVE_TO_SELF, 1);
+        rotateAnimation.setDuration(duration);
+        rotateAnimation.setRepeatCount(1);
+        rotateAnimation.setRepeatMode(Animation.REVERSE);
+
+        AnimationSet mRightAnimationSet = new AnimationSet(true);
+        mRightAnimationSet.setInterpolator(new LinearInterpolator());
+        //mRightAnimationSet.addAnimation(translateAnimation);
+        mRightAnimationSet.addAnimation(rotateAnimation);
+        mRightAnimationSet.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                if (mTopLike != null) {
+                    mTopLike.animate()
+                            .setDuration(500)
+                            .setInterpolator(new LinearInterpolator())
+                            .alpha(1.0f);
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (mTopLike != null) {
+                    mTopLike.animate()
+                            .setDuration(250)
+                            .setInterpolator(new LinearInterpolator())
+                            .alpha(0);
+                }
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        animateView.startAnimation(mRightAnimationSet);
+
+    }
+
 
     /**
      * 设置卡片操作回调
@@ -641,7 +973,7 @@ public class
          *
          * @param index 最顶层显示的卡片的index
          */
-        void onShow(int index);
+        void onShow(AdapterView<?> parent, int index);
 
         /**
          * 卡片飞向两侧回调
@@ -649,7 +981,7 @@ public class
          * @param index 飞向两侧的卡片数据index
          * @param type  飞向哪一侧{@link #VANISH_TYPE_LEFT}或{@link #VANISH_TYPE_RIGHT}
          */
-        void onCardVanish(int index, int type);
+        void onCardVanish(AdapterView<?> parent, View view, int index, int flyType, int type);
 
         /**
          * 卡片点击事件

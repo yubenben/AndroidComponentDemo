@@ -13,7 +13,7 @@
         <attr name="matProg_linearProgress" format="boolean" />
     </declare-styleable>
 
-    <declare-styleable name="card">
+    <declare-styleable name="SlideCard">
         <attr name="yOffsetStep" format="dimension" />
     </declare-styleable>
 </resources>

@@ -27,7 +27,7 @@ import jp.wasabeef.fresco.processors.BlurPostprocessor;
  * Created by yubenben
  * Date: 16-1-26.
  */
-public class CardAdapter extends BaseCardAdapter {
+public class CardAdapter extends SlideBaseCardAdapter {
 
     private final Object mLock = new Object();
     private ArrayList<CardDataItem> mData;

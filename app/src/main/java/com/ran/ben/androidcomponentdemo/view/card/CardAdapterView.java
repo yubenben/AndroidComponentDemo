@@ -33,12 +33,16 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
         @Override
         public void onInvalidated() {
             super.onInvalidated();
+            removeAllViewsInLayout();
+            if  (mCardSlidePanel != null) {
+                mCardSlidePanel.clearViewStack();
+            }
         }
     };
 
     public static class LayoutParams extends ViewGroup.LayoutParams {
 
-        int viewType;
+        public int viewType;
 
         public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
@@ -96,7 +100,7 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
 
-        int topMargin  = (int) getResources().getDimension(R.dimen.card_top_margin);
+        int topMargin  = 3;
         for (int i = 0; i < getChildCount(); i++) {
             boundsRect.set(0, 0, getWidth(), getHeight());
 
@@ -105,7 +109,7 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
             w = view.getMeasuredWidth();
             h = view.getMeasuredHeight();
 
-            Gravity.apply(Gravity.CENTER_HORIZONTAL | Gravity.TOP, w, h, boundsRect, 0, topMargin, childRect);
+            Gravity.apply(Gravity.CENTER, w, h, boundsRect, 0, topMargin, childRect);
             view.layout(childRect.left, childRect.top,
                     childRect.right, childRect.bottom);
 //            Log.d(TAG, "onLayout: boundsRect: left=" + boundsRect.left
@@ -150,8 +154,8 @@ public class CardAdapterView extends AdapterView<ListAdapter> {
     }
 
     public void addViewInLayout(View view, int position) {
-        addViewInLayout(view, 0, new LayoutParams(LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT,
+        addViewInLayout(view, 0, new LayoutParams(LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT,
                 mListAdapter.getItemViewType(position)), false);
     }
 }

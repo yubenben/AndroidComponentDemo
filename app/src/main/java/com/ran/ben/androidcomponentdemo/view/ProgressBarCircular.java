@@ -52,12 +52,12 @@ public class ProgressBarCircular extends RelativeLayout {
     //旋转的角度
     private float rotateAngle = 0;
     //旋转速度
-    private int rotateSpeed = 3;
+    private float rotateSpeed = 4.0f;
 
     private boolean initFinish = false;
 
     //在圆周排放的imageView的轨迹坐标
-    private PathMeasure measureImage;
+    private PathMeasure pathMeasure;
     //在圆周排放的imageView
     private ArrayList<View> cViewList = new ArrayList<View>();
 
@@ -85,14 +85,17 @@ public class ProgressBarCircular extends RelativeLayout {
 
     private void init() {
         arcZ = getWidth() * arcZa;
-        if (arcZ < dpToPx(15)) {
-            arcZ = dpToPx(15);
+        if (arcZ < dpToPx(5)) {
+            arcZ = dpToPx(5);
         }
         if (getChildCount() >= 1) {
             View view = getChildAt(0);
             ViewGroup.LayoutParams params = view.getLayoutParams();
-            params.width =  (int)(getWidth() * arcR3  - (arcZ) * 2);
-            params.height = (int)(getHeight() * arcR3 - (arcZ) * 2);
+            //Log.d("TAG", "init: params.width=" + params.width + " params.height=" + params.height);
+            params.width = (int) (getWidth() * arcR3 - (arcZ) * 3);
+            params.height = (int) (getHeight() * arcR3 - (arcZ) * 3);
+            //Log.d("TAG", "init: params.width=" + params.width + " params.height=" + params.height);
+            requestLayout();
         }
 
         cViewList.clear();
@@ -115,6 +118,7 @@ public class ProgressBarCircular extends RelativeLayout {
     }
 
     Path orbit;
+
     /**
      * Draw animation of view
      *
@@ -126,32 +130,33 @@ public class ProgressBarCircular extends RelativeLayout {
             init();
             initFinish = true;
         }
-        if (measureImage == null) {
+        if (pathMeasure == null) {
             orbit = new Path();
             orbit.addCircle(canvas.getWidth() / 2,
                     canvas.getHeight() / 2,
                     canvas.getWidth() / 2 * arcR2,
                     Path.Direction.CW);
 
-            measureImage = new PathMeasure(orbit, false);
+            pathMeasure = new PathMeasure(orbit, false);
 
-            Random random  = new Random();
-            int start = Math.abs(random.nextInt() % (int)measureImage.getLength());
+            Random random = new Random();
+            int start = Math.abs(random.nextInt() % (int) pathMeasure.getLength());
             int position = 0, i = 0;
             for (View view : cViewList) {
-                if (position < measureImage.getLength() - (arcZ * 3.6f)) {
+                if (position < pathMeasure.getLength() - (arcZ * 3.6f)) {
                     float[] coords = new float[]{0f, 0f};
-                    measureImage.getPosTan((start + position) % (int) measureImage.getLength(),
+                    pathMeasure.getPosTan((start + position) % (int) pathMeasure.getLength(),
                             coords, null);
 
                     view.setX((int) coords[0] - (arcZ * 3.6f) / 2 + i * dpToPx(5));
                     view.setY((int) coords[1] - (arcZ * 3.6f) / 2 + i * dpToPx(5));
                     ViewGroup.LayoutParams params = view.getLayoutParams();
-                    params.width  = (int)(arcZ * 3.6f);
-                    params.height = (int)(arcZ * 3.6f);
+                    params.width = (int) (arcZ * 3.6f);
+                    params.height = (int) (arcZ * 3.6f);
+                    //Log.d("TAG", "init: params.width=" + params.width + " params.height=" + params.height);
                 } else {
                     ViewGroup.LayoutParams params = view.getLayoutParams();
-                    params.width  = 0;
+                    params.width = 0;
                     params.height = 0;
                 }
 
@@ -159,90 +164,111 @@ public class ProgressBarCircular extends RelativeLayout {
                 i++;
                 i = i > 3 ? 0 : i;
             }
+            requestLayout();
         }
 
         if (bitmapArc1 == null) {
             float width = canvas.getWidth() * arcR1;
             float height = canvas.getHeight() * arcR1;
-            bitmapArc1 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
+            float stokeW = dpToPx(2);
+            bitmapArc1 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
             Canvas temp = new Canvas(bitmapArc1);
             Paint paint = new Paint();
-            paint.setAntiAlias(true);
+            paint.setStyle(Paint.Style.STROKE); //设置空心
+            paint.setStrokeWidth(dpToPx(2)); //设置圆环的宽度
+            paint.setAntiAlias(true);  //消除锯齿
             paint.setColor(backgroundColorGray);
-            temp.drawArc(new RectF(0, 0, width, height), 0, 360, true, paint);
+            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+                    0, 360, false, paint);
             paint.setColor(backgroundColorPrimy);
-            temp.drawArc(new RectF(0, 0, width, height), arcStart, arcEnd * 2, true, paint);
-            Paint transparentPaint = new Paint();
-            transparentPaint.setAntiAlias(true);
-            transparentPaint.setColor(getResources().getColor(android.R.color.transparent));
-            transparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            temp.drawCircle(width / 2, height / 2, (width / 2) - dpToPx(2), transparentPaint);
+            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+                    arcStart, arcEnd * 2, false, paint);
         }
 
         if (bitmapArc2 == null) {
             float width = canvas.getWidth() * arcR2;
             float height = canvas.getHeight() * arcR2;
-            bitmapArc2 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
+            float stokeW = arcZ;
+            bitmapArc2 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
             Canvas temp = new Canvas(bitmapArc2);
             Paint paint = new Paint();
-            paint.setAntiAlias(true);
+            paint.setStyle(Paint.Style.STROKE); //设置空心
+            paint.setStrokeWidth(arcZ); //设置圆环的宽度
+            paint.setAntiAlias(true);  //消除锯齿
             paint.setColor(backgroundColorGray);
-            temp.drawArc(new RectF(0, 0, width, height), 0, 360, true, paint);
+            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+                    0, 360, false, paint);
             paint.setColor(backgroundColor);
-            temp.drawArc(new RectF(0, 0, width, height), arcStart, arcEnd, true, paint);
-            Paint transparentPaint = new Paint();
-            transparentPaint.setAntiAlias(true);
-            transparentPaint.setColor(getResources().getColor(android.R.color.transparent));
-            transparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            temp.drawCircle(width / 2, height / 2, (width / 2) - (arcZ), transparentPaint);
+            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+                    arcStart, arcEnd, false, paint);
         }
 
         if (bitmapArc3 == null) {
             float width = canvas.getWidth() * arcR3;
             float height = canvas.getHeight() * arcR3;
-            bitmapArc3 = Bitmap.createBitmap((int) width + 1, (int) height + 1, Bitmap.Config.ARGB_8888);
+            float stokeW = arcZ;
+            bitmapArc3 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
             Canvas temp = new Canvas(bitmapArc3);
             Paint paint = new Paint();
-            paint.setAntiAlias(true);
+            paint.setStyle(Paint.Style.STROKE); //设置空心
+            paint.setStrokeWidth(arcZ); //设置圆环的宽度
+            paint.setAntiAlias(true);  //消除锯齿
             paint.setColor(backgroundColorGray);
-            temp.drawArc(new RectF(0, 0, width, height), 0, 360, true, paint);
+            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+                    0, 360, false, paint);
             paint.setColor(backgroundColor);
-            temp.drawArc(new RectF(0, 0, width, height), arcStart, arcEnd, true, paint);
-            Paint transparentPaint = new Paint();
-            transparentPaint.setAntiAlias(true);
-            transparentPaint.setColor(getResources().getColor(android.R.color.transparent));
-            transparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            temp.drawCircle(width / 2, height / 2, (width / 2) - (arcZ), transparentPaint);
+            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+                    arcStart, arcEnd, false, paint);
         }
 
-        if (rotateAngle > 45 && rotateAngle < 225) {
-            rotateAngle += rotateSpeed * 3;
-        } else {
-            rotateAngle += rotateSpeed;
-        }
-        rotateAngle = rotateAngle % 360;
 
+        input += rotateSpeed;
+        input = input % 360;
+        rotateAngle = getInterpolation(input / 360) * 360;
+        //Log.d("progress", "drawFrame: input1= "+ input / 360 + " rotation="+ rotateAngle / 360 + "    input= "+ input + " rotation="+ rotateAngle);
+
+        Paint bpPaint = new Paint();
+        bpPaint.setAntiAlias(true);
         if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
             canvas.save();
             canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-            canvas.drawBitmap(bitmapArc1, getWidth() * (1 - arcR1) / 2, getHeight() * (1 - arcR1) / 2, new Paint());
+            canvas.drawBitmap(bitmapArc1, getWidth() * (1 - arcR1) / 2,
+                    getHeight() * (1 - arcR1) / 2, bpPaint);
             canvas.restore();
         }
 
         if (bitmapArc2 != null && !bitmapArc2.isRecycled()) {
             canvas.save();
             canvas.rotate(rotateAngle, getWidth() / 2, getHeight() / 2);
-            canvas.drawBitmap(bitmapArc2, getWidth() * (1 - arcR2) / 2, getHeight() * (1 - arcR2) / 2, new Paint());
+            canvas.drawBitmap(bitmapArc2, getWidth() * (1 - arcR2) / 2,
+                    getHeight() * (1 - arcR2) / 2, bpPaint);
             canvas.restore();
         }
 
         if (bitmapArc3 != null && !bitmapArc3.isRecycled()) {
             canvas.save();
             canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-            canvas.drawBitmap(bitmapArc3, getWidth() * (1 - arcR3) / 2, getWidth() * (1 - arcR3) / 2, new Paint());
+            canvas.drawBitmap(bitmapArc3, getWidth() * (1 - arcR3) / 2,
+                    getWidth() * (1 - arcR3) / 2, bpPaint);
             canvas.restore();
         }
 
+//        Paint tmpPaint = new Paint();
+//        tmpPaint.setAntiAlias(true);
+//        tmpPaint.setColor(getResources().getColor(android.R.color.holo_blue_bright));
+//        canvas.drawPath(orbit, tmpPaint);
+    }
+
+    private float input = 0f;
+    private float getInterpolation(float input) {
+        if (input < 0.24f) {
+            return input * 0.55f;
+        } else if (input > 0.76f) {
+            return (input - 0.76f) * 0.55f + (float) (Math.cos((0.76f + 1) * Math.PI) / 2.0f) + 0.5f;
+        } else {
+            return (float) (Math.cos((input + 1) * Math.PI) / 2.0f) + 0.5f;
+        }
+        //return (float) (Math.cos((input + 1) * Math.PI) / 2.0f) + 0.5f;
     }
 
     public void setBackgroundColor(int color) {
@@ -253,7 +279,7 @@ public class ProgressBarCircular extends RelativeLayout {
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
-        if  (visibility != VISIBLE) {
+        if (visibility != VISIBLE) {
             try {
                 if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
                     bitmapArc1.recycle();
@@ -270,25 +296,24 @@ public class ProgressBarCircular extends RelativeLayout {
                     bitmapArc3 = null;
                 }
 
-                if (measureImage != null) {
-                    measureImage = null;
+                if (pathMeasure != null) {
+                    pathMeasure = null;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             for (View view : cViewList) {
-                view.clearAnimation();
                 view.setVisibility(INVISIBLE);
             }
         }
     }
 
-    public void showCircleView() {
-        if (measureImage != null) {
+    public void showCircleView(final IOnShowViewEndListener listener) {
+        if (pathMeasure != null) {
             int i = 1;
             int duration = 300;
-            for(final View view : cViewList) {
+            for (final View view : cViewList) {
                 view.setScaleX(0);
                 view.setScaleY(0);
                 view.setVisibility(VISIBLE);
@@ -297,29 +322,30 @@ public class ProgressBarCircular extends RelativeLayout {
                 PropertyValuesHolder scaleY = PropertyValuesHolder.ofFloat("scaleY", 0, 1);
                 ObjectAnimator listObjectAnimator
                         = ObjectAnimator.ofPropertyValuesHolder(view, scaleX, scaleY);
-                listObjectAnimator.setDuration(duration + duration * i);
+                listObjectAnimator.setDuration(duration * i);
                 listObjectAnimator.setInterpolator(new OvershootInterpolator(3.0f));
-                listObjectAnimator.setStartDelay(duration * i);
-                listObjectAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        if (mListener  != null) {
-                            mListener.onEnd();
+                listObjectAnimator.setStartDelay(duration * (i - 1));
+                if (i == cViewList.size()) {
+                    listObjectAnimator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            if (listener != null) {
+                                listener.onEnd();
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 listObjectAnimator.start();
                 i++;
+            }
+        } else {
+            if (listener != null) {
+                listener.onEnd();
             }
         }
     }
 
-    private IOnShowViewEndListener mListener;
-
-    public void setOnCardItemOnClickListener(IOnShowViewEndListener listener) {
-        mListener = listener;
-    }
     public interface IOnShowViewEndListener {
         void onEnd();
     }
