@@ -8,12 +8,6 @@
 
     <include layout="@layout/tab_head_bar" />
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
@@ -77,7 +71,6 @@
                 app:layout_behavior="com.ran.ben.androidcomponentdemo.view.behavior.QuickHideBehavior"/>
         </android.support.design.widget.CoordinatorLayout>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>
 

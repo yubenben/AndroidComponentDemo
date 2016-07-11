@@ -38,7 +38,7 @@ public class HeaderScrollingActivity extends AppCompatActivity
     private ViewPager mHeadViewPager;
     private HeadViewAdapter mHeadViewAdapter;
 
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+
     private AppBarLayout appBarLayout;
 
     @Override
@@ -57,10 +57,7 @@ public class HeaderScrollingActivity extends AppCompatActivity
         appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         appBarLayout.addOnOffsetChangedListener(this);
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        mSwipeRefreshLayout.setProgressViewOffset(false, 0, 100);
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
+
 
         mTabLayout = (TabLayout) findViewById(R.id.tab_layout);
 
@@ -113,17 +110,17 @@ public class HeaderScrollingActivity extends AppCompatActivity
         } else if (mViewPager.getCurrentItem() == 2) {
             mGridRecyclerFragment.refresh();
         }
-        mSwipeRefreshLayout.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mSwipeRefreshLayout.setRefreshing(false);
-            }
-        }, 1000);
+//        mSwipeRefreshLayout.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                mSwipeRefreshLayout.setRefreshing(false);
+//            }
+//        }, 1000);
     }
 
     @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-        mSwipeRefreshLayout.setEnabled(verticalOffset== 0);
+//        mSwipeRefreshLayout.setEnabled(verticalOffset== 0);
     }
 
     @Override
