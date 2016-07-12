@@ -9,5 +9,6 @@
         <item>HeaderScrollingActivity</item>
         <item>CardSlideActivity</item>
         <item>CicrcleProgressActivity</item>
+        <item>DrawableLoadingActivity</item>
     </array>
 </resources>
