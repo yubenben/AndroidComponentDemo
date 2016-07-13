@@ -5,6 +5,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,6 +20,7 @@ import com.facebook.drawee.backends.pipeline.Fresco;
 import com.ran.ben.androidcomponentdemo.R;
 
 import com.ran.ben.androidcomponentdemo.adapter.AllActivityViewAdapter;
+import com.ran.ben.androidcomponentdemo.utils.NdkJniUtils;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -30,6 +32,12 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         Fresco.initialize(this);
+
+        NdkJniUtils jni = new NdkJniUtils();
+
+        Log.d("jni", "onCreate: jni = "  + jni.getCLanguageString(getApplication()));
+
+        Log.d("jni", "onCreate: getApplicationInfo().sourceDir = "  + getApplicationInfo().sourceDir);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
