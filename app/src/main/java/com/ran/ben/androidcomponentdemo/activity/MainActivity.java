@@ -1,5 +1,8 @@
 package com.ran.ben.androidcomponentdemo.activity;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -35,9 +38,16 @@ public class MainActivity extends AppCompatActivity
 
         NdkJniUtils jni = new NdkJniUtils();
 
-        Log.d("jni", "onCreate: jni = "  + jni.checkDexMD5(getApplication()));
+        Log.d("jni", "onCreate: jni = "  + jni.checkDexMD5(getApplication(), getApplicationInfo().sourceDir));
 
         Log.d("jni", "onCreate: getApplicationInfo().sourceDir = "  + getApplicationInfo().sourceDir);
+        try {
+            PackageInfo info  = getPackageManager().getPackageInfo("", PackageManager.GET_SIGNATURES);
+            Signature[] signatures = info.signatures;
+            signatures[0].hashCode();
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
