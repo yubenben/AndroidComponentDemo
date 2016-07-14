@@ -15,6 +15,7 @@
 #define TAG "application"
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
 
 // 签名文件的MD5
 unsigned char* MD5 = "111111111111111111";
@@ -25,12 +26,10 @@ void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
  *   * Method:    getCLanguageString
  *    * Signature: ()Ljava/lang/String;
  *     */
- JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_getCLanguageString
-         (JNIEnv* env,
-          jobject thiz, jobject application) {
-          return  getSign(env, application);
+ JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkDexMD5
+         (JNIEnv* env, jobject thiz, jobject application) {
 
-
+    return  getSign(env, application);
  }
 
 int getSign(JNIEnv *env, jobject context) {
@@ -83,7 +82,7 @@ int getSign(JNIEnv *env, jobject context) {
     jbyte* bap = (*env)->GetByteArrayElements(env, byteArray, JNI_FALSE); // jbyteArray转为jbyte*
     char* rtn = NULL;
     int i=0;
-    int result = 1;
+    int result = -1;
     if(len > 0)
     {
         rtn = (char*)malloc(len+1); // "\0"
@@ -102,23 +101,26 @@ int getSign(JNIEnv *env, jobject context) {
         result = strcasecmp(MD5, char_result);
         free(char_result);
     }
+    LOGI("result hashCode = %d", hashCode);
     (*env)->ReleaseByteArrayElements(env, byteArray, bap, 0);  //释放掉
-    if (result != 0)
-    {
-        LOGI("result error!");
-        jclass newExcCls;
-        (*env)->ExceptionDescribe(env);
-        (*env)->ExceptionClear(env);
-        newExcCls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
-        if (newExcCls == NULL)
-        {
-            /* Unable to find the exception class, give up. */
-            return hashCode;
-        }
-        (*env)->ThrowNew(env, newExcCls, "thrown from C code");
-    }
-    LOGI("result hashCode = " + hashCode);
-    return hashCode;
+    return result;
+    
+    //if (result != 0)
+    //{
+    //    LOGI("result error!");
+    //    jclass newExcCls;
+    //    (*env)->ExceptionDescribe(env);
+    //    (*env)->ExceptionClear(env);
+    //    newExcCls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    //    if (newExcCls == NULL)
+    //    {
+    //        /* Unable to find the exception class, give up. */
+    //        return hashCode;
+    //    }
+    //    (*env)->ThrowNew(env, newExcCls, "thrown from C code");
+    //}
+    //LOGI("result hashCode = %d", hashCode);
+    //return result;
 }
 void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen)
 {

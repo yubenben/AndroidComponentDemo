@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity
 
         NdkJniUtils jni = new NdkJniUtils();
 
-        Log.d("jni", "onCreate: jni = "  + jni.getCLanguageString(getApplication()));
+        Log.d("jni", "onCreate: jni = "  + jni.checkDexMD5(getApplication()));
 
         Log.d("jni", "onCreate: getApplicationInfo().sourceDir = "  + getApplicationInfo().sourceDir);
 

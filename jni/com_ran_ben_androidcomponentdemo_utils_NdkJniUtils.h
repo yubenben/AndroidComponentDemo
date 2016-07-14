@@ -12,7 +12,7 @@ extern "C" {
  * Method:    getCLanguageString
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_getCLanguageString
+JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkDexMD5
         (JNIEnv* env,
          jobject thiz, jobject application);
 
