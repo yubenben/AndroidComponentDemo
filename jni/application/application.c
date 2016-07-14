@@ -44,32 +44,10 @@ int checkmd5(JNIEnv* env, jstring file){
    if(filename == NULL) {
        return -1; /* OutOfMemoryError already thrown */
    }
-    unsigned char c[16*2 + 1];
-    int i;
-    LOGI("file name %s\n", filename);
-    FILE *inFile = fopen (filename, "rb");
-    MD5_CTX mdContext;
-    int bytes;
-    unsigned char data[1024];
-
-    if (inFile == NULL) {
-        LOGI("%s can't be opened.\n", filename);
-        return -1;
-    }
-
-    MD5Init (&mdContext);
-    while ((bytes = fread (data, 1, 1024, inFile)) != 0)
-        MD5Update (&mdContext, data, bytes);
-    MD5Final (c,&mdContext);
-    char* char_result = (char*) malloc(16*2+1);
-    ByteToHexStr(c, char_result, 16);
-    *(char_result+16*2) = '\0';// 在末尾补\0
-    LOGI("result:%s\n", char_result);
-    //for(i = 0; i < 16*2; i++) LOGI("%02x", c[i]);
-
-    fclose (inFile);
-    return 0;
-    }
+   LOGD("filename=%s \n", filename);
+   LOGD("md5 = %s \n", MDFile(filename));
+   return 0;
+}
 
  static void loadAPK (const char* apkPath) {
    LOGI("Loading APK %s", apkPath);

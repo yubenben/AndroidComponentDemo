@@ -41,13 +41,6 @@ public class MainActivity extends AppCompatActivity
         Log.d("jni", "onCreate: jni = "  + jni.checkDexMD5(getApplication(), getApplicationInfo().sourceDir));
 
         Log.d("jni", "onCreate: getApplicationInfo().sourceDir = "  + getApplicationInfo().sourceDir);
-        try {
-            PackageInfo info  = getPackageManager().getPackageInfo("", PackageManager.GET_SIGNATURES);
-            Signature[] signatures = info.signatures;
-            signatures[0].hashCode();
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
