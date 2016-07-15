@@ -40,7 +40,7 @@ int checkmd5(JNIEnv* env, jstring file){
    return 0;
 }
 
-void  Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_readFromAssetsLibzip
+JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_readFromAssetsLibzip
 (JNIEnv* env, jclass tis, jstring japkpath, jstring jfilename, jstring jcachedir)
 {
    int i = 0;
@@ -86,7 +86,10 @@ void  Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_readFromAssetsLibz
    zip_fclose(file);
    zip_close(apkArchive);
    LOGD("%s md5 = %s \n", cachefile, MDFile(cachefile));
+   int result = -1;
+   result = strcasecmp("3a3173c51c90b4dc53710405c23d254e", MDFile(cachefile));
    (*env)->ReleaseStringUTFChars(env, jcachedir, cachefile);
+   return result;
 }
 
 
