@@ -16,6 +16,9 @@ JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_c
         (JNIEnv* env,
          jobject thiz, jobject application, jstring file);
 
+void  Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_readFromAssetsLibzip
+(JNIEnv* env,jclass tis,jstring assetpath,jstring filename, jstring cachedir);
+
 #ifdef __cplusplus
 }
 #endif

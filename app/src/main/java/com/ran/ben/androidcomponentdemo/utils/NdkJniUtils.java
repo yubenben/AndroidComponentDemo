@@ -8,6 +8,7 @@ import android.app.Application;
  */
 public class NdkJniUtils {
     public native int checkDexMD5(Application application, String file);
+    public native int readFromAssetsLibzip(String  path,  String name,  String cachedir);
 
     static {
         System.loadLibrary("application");	//defaultConfig.ndk.moduleName

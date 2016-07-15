@@ -7,6 +7,10 @@
 
 #include<stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <fcntl.h>
 #include <android/log.h>
 #include <../libzip/zip.h>
 #include "md5.h"
@@ -17,11 +21,10 @@
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__))
 #define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
-
-zip_t* APKArchive;
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
 
 // 签名文件的MD5
-unsigned const  char* MD5 = "111111111111111111";
+//unsigned const  char* MD5 = "111111111111111111";
 
 void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
 int getSign(JNIEnv *env, jobject context);
@@ -49,26 +52,74 @@ int checkmd5(JNIEnv* env, jstring file){
    return 0;
 }
 
- static void loadAPK (const char* apkPath) {
-   LOGI("Loading APK %s", apkPath);
-   APKArchive = zip_open(apkPath, 0, NULL);
-   if (APKArchive == NULL) {
-     LOGE("Error loading APK");
-     return;
+void  Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_readFromAssetsLibzip
+(JNIEnv* env,jclass tis,jstring assetpath,jstring filename, jstring cachedir)
+{
+   int i=0;
+   jboolean iscopy;
+   const char *mpath = (*env)->GetStringUTFChars(env, assetpath, &iscopy);
+   struct zip* apkArchive=zip_open(mpath, 0, NULL);;
+   (*env)->ReleaseStringUTFChars(env, filename, mpath);
+
+   struct zip_stat fstat;
+   zip_stat_init(&fstat);
+
+   int numFiles = zip_get_num_files(apkArchive);
+   LOGI("File numFiles %i \n",numFiles);
+   for (i=0; i<numFiles; i++) {
+     const char* name = zip_get_name(apkArchive, i, 0);
+
+     if (name == NULL) {
+      LOGE("Error reading zip file name at index %i : %s", zip_strerror(apkArchive));
+      return;
+    }
+
+    zip_stat(apkArchive,name,0,&fstat);
+    //LOGI("File %i:%s Size1: %u Size2: %u", i,fstat.name,fstat.size ,fstat.comp_size)  ;
    }
 
-   //Just for debug, print APK contents
-   int numFiles = zip_get_num_files(APKArchive);
-   int i=0;
-   for (i=0; i<numFiles; i++) {
-     const char* name = zip_get_name(APKArchive, i, 0);
-     if (name == NULL) {
-       LOGE("Error reading zip file name at index %i : %s", zip_strerror(APKArchive));
-       return;
-     }
-     LOGI("File %i : %s\n", i, name);
+   const char *fname = (*env)->GetStringUTFChars(env, filename, &iscopy);
+   struct zip_file* file = zip_fopen(apkArchive, fname, 0);
+
+   if (!file) {
+    LOGE("Error opening %s from APK", fname);
+    return;
    }
- }
+
+   zip_stat(apkArchive,fname,0,&fstat);
+   (*env)->ReleaseStringUTFChars(env, filename, fname);
+   //char *buffer=(char *)malloc(fstat.size+1);
+   //buffer[fstat.size]=0;
+   //int numBytesRead =  zip_fread(file, buffer,fstat.size);;
+   //LOGI(": %s\n",buffer);
+   //LOGD("dex md5 = %s \n", MDString(buffer));
+   //free(buffer);
+
+   const char *cachefile = (*env)->GetStringUTFChars(env, cachedir, &iscopy);
+   int fd = open(cachefile, O_RDWR | O_TRUNC | O_CREAT, 0644);
+   if (fd < 0) {
+       LOGE("create file %s error/n", cachefile);
+       exit(101);
+   }
+
+   unsigned int  sum = 0;
+   int len;
+   char buf[100];
+   while (sum != fstat.size) {
+       len = zip_fread(file, buf, 100);
+       if (len < 0) {
+           LOGE("boese, boese/n");
+           exit(102);
+       }
+       write(fd, buf, len);
+       sum += len;
+   }
+   close(fd);
+   zip_fclose(file);
+   zip_close(apkArchive);
+   LOGD("%s md5 = %s \n", cachefile, MDFile(cachefile));
+}
+
 
 int getSign(JNIEnv *env, jobject context) {
     //Context的类
@@ -132,55 +183,19 @@ int getSign(JNIEnv *env, jobject context) {
         MD5Init(&mdContext); //初始化
         MD5Update(&mdContext, rtn, len);
         MD5Final(&mdContext, decrypt);
-        char* char_result = (char*) malloc(16*2+1);
-        ByteToHexStr(decrypt, char_result, 16);
-        *(char_result+16*2) = '\0';// 在末尾补\0
-        LOGI("result:%s\n", char_result);
-        result = strcasecmp(MD5, char_result);
-        free(char_result);
+        //char* char_result = (char*) malloc(16*2+1);
+        //ByteToHexStr(decrypt, char_result, 16);
+        //*(char_result+16*2) = '\0';// 在末尾补\0
+        //LOGI("result:%s\n", char_result);
+        //result = strcasecmp("111", char_result);
+        //free(char_result);
     }
     LOGI("result hashCode = %d", hashCode);
     (*env)->ReleaseByteArrayElements(env, byteArray, bap, 0);  //释放掉
     return result;
-    
-    //if (result != 0)
-    //{
-    //    LOGI("result error!");
-    //    jclass newExcCls;
-    //    (*env)->ExceptionDescribe(env);
-    //    (*env)->ExceptionClear(env);
-    //    newExcCls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
-    //    if (newExcCls == NULL)
-    //    {
-    //        /* Unable to find the exception class, give up. */
-    //        return hashCode;
-    //    }
-    //    (*env)->ThrowNew(env, newExcCls, "thrown from C code");
-    //}
-    //LOGI("result hashCode = %d", hashCode);
-    //return result;
+
 }
-void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen)
-{
-    short i;
-    unsigned char highByte, lowByte;
-    for (i = 0; i < sourceLen; i++)
-    {
-        highByte = source[i] >> 4;
-        lowByte = source[i] & 0x0f;
-        highByte += 0x30;
-        if (highByte > 0x39)
-            dest[i * 2] = highByte + 0x07;
-        else
-            dest[i * 2] = highByte;
-        lowByte += 0x30;
-        if (lowByte > 0x39)
-            dest[i * 2 + 1] = lowByte + 0x07;
-        else
-            dest[i * 2 + 1] = lowByte;
-    }
-    return;
-}
+
 
 
 
