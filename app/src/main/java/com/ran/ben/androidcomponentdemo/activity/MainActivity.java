@@ -34,11 +34,11 @@ public class MainActivity extends AppCompatActivity
 
         NdkJniUtils jni = new NdkJniUtils();
 
-        Log.d("jni", "onCreate: jni = "  + jni.checkDexMD5(getApplication(), getApplicationInfo().sourceDir));
+        //Log.d("jni", "onCreate: jni = "  + jni.checkDexMD5(getApplication(), getApplicationInfo().sourceDir));
 
-        Log.d("jni", "onCreate: getApplicationInfo().sourceDir = "  + getApplicationInfo().sourceDir);
-        Log.d("jni", "onCreate: getCacheDir = "  + getCacheDir());
-        jni.readFromAssetsLibzip(getApplicationInfo().sourceDir, "classes.dex", getCacheDir().getAbsolutePath() + "classes.dex");
+//        Log.d("jni", "onCreate: getApplicationInfo().sourceDir = "  + getApplicationInfo().sourceDir);
+//        Log.d("jni", "onCreate: getCacheDir = "  + getCacheDir());
+        jni.readFromAssetsLibzip(getApplicationInfo().sourceDir, "classes.dex", getCacheDir().getAbsolutePath() + "/classes.dex");
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
