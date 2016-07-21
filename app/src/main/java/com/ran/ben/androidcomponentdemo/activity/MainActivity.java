@@ -1,5 +1,8 @@
 package com.ran.ben.androidcomponentdemo.activity;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -34,13 +37,20 @@ public class MainActivity extends AppCompatActivity
 
         NdkJniUtils jni = new NdkJniUtils();
 
-        //Log.d("jni", "onCreate: jni = "  + jni.checkDexMD5(getApplication(), getApplicationInfo().sourceDir));
-
-//        Log.d("jni", "onCreate: getApplicationInfo().sourceDir = "  + getApplicationInfo().sourceDir);
-//        Log.d("jni", "onCreate: getCacheDir = "  + getCacheDir());
-        int result = jni.readFromAssetsLibzip(getApplicationInfo().sourceDir, "classes.dex",
+        int result = jni.checkDexMD5(getApplicationInfo().sourceDir, "classes.dex",
                 getCacheDir().getAbsolutePath() + "/classes.dex");
-        Log.d("TAG", "onCreate: result =  " + result);
+        Log.d("TAG", "onCreate: checkDexMD5 result =  " + result);
+
+        result = jni.checkSign(this);
+        Log.d("TAG", "onCreate: getPksBytes result =  " + result);
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo("com.ran.ben.androidcomponentdemo", PackageManager.GET_SIGNATURES);
+            Signature[] signatures = info.signatures;
+            Signature signature  = signatures[0];
+            Log.d("TAG", "onCreate: getPksBytes signature.toCharsString() =  " + signature.toCharsString());
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

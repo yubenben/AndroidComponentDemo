@@ -4,20 +4,25 @@
 
 #ifndef _Included_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils
 #define _Included_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils
+#include<stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <android/log.h>
+#include <../libzip/zip.h>
+#include "md5.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
-/*
- * Class:     com_ran_ben_androidcomponentdemo_utils_NdkJniUtils
- * Method:    getCLanguageString
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkDexMD5
-        (JNIEnv* env,
-         jobject thiz, jobject application, jstring file);
 
-JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_readFromAssetsLibzip
+
+JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkDexMD5
 (JNIEnv* env,jclass tis,jstring assetpath,jstring filename, jstring cachedir);
+
+JNIEXPORT jint Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkSign
+  (JNIEnv *env, jclass clz, jobject obj);
 
 #ifdef __cplusplus
 }

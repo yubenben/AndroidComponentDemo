@@ -5,16 +5,6 @@
 	> Created Time: 2016年07月13日 星期三 18时07分44秒
  ************************************************************************/
 
-#include<stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <android/log.h>
-#include <../libzip/zip.h>
-#include "md5.h"
-
 #include "com_ran_ben_androidcomponentdemo_utils_NdkJniUtils.h"
 
 #define TAG "application"
@@ -23,24 +13,8 @@
 #define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__))
 
+
 JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkDexMD5
-        (JNIEnv* env, jobject thiz, jobject application, jstring file) {
-   return checkmd5(env, file);
-}
-
-
-int checkmd5(JNIEnv* env, jstring file){
-   const char* filename;
-   filename = (*env)->GetStringUTFChars(env, file, 0);
-   if(filename == NULL) {
-       return -1; /* OutOfMemoryError already thrown */
-   }
-   LOGD("filename=%s \n", filename);
-   LOGD("md5 = %s \n", MDFile(filename));
-   return 0;
-}
-
-JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_readFromAssetsLibzip
 (JNIEnv* env, jclass tis, jstring japkpath, jstring jfilename, jstring jcachedir)
 {
    int i = 0;
@@ -57,13 +31,13 @@ JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_r
 
    if (!file) {
     LOGE("Error opening %s from APK", filename);
-    return;
+    return -1;
    }
 
    zip_stat(apkArchive, filename, 0, &fstat);
    (*env)->ReleaseStringUTFChars(env, jfilename, filename);
 
-   const char *cachefile = (*env)->GetStringUTFChars(env, jcachedir, &iscopy);
+   char *cachefile = (*env)->GetStringUTFChars(env, jcachedir, &iscopy);
    int fd = open(cachefile, O_RDWR | O_TRUNC | O_CREAT, 0644);
    if (fd < 0) {
        LOGE("create file %s error/n", cachefile);
@@ -93,80 +67,89 @@ JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_r
 }
 
 
-//int getSign(JNIEnv *env, jobject context) {
-//    //Context的类
-//    jclass context_clazz = (*env)->GetObjectClass(env, context);
-//    // 得到 getPackageManager 方法的 ID
-//    jmethodID methodID_getPackageManager = (*env)->GetMethodID(env, context_clazz,
-//                                                               "getPackageManager", "()Landroid/content/pm/PackageManager;");
-//
-//    // 获得PackageManager对象
-//    jobject packageManager = (*env)->CallObjectMethod(env, context,
-//                                                      methodID_getPackageManager);
-//    // 获得 PackageManager 类
-//    jclass pm_clazz = (*env)->GetObjectClass(env, packageManager);
-//    // 得到 getPackageInfo 方法的 ID
-//    jmethodID methodID_pm = (*env)->GetMethodID(env, pm_clazz, "getPackageInfo",
-//                                                "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
-//    //
-//    // 得到 getPackageName 方法的 ID
-//    jmethodID methodID_pack = (*env)->GetMethodID(env, context_clazz,
-//                                                  "getPackageName", "()Ljava/lang/String;");
-//
-//    // 获得当前应用的包名
-//    jstring application_package = (*env)->CallObjectMethod(env, context,
-//                                                           methodID_pack);
-//    const char *str = (*env)->GetStringUTFChars(env, application_package, 0);
-//    LOGD("JNI packageName: %s\n", str);
-//
-//    // 获得PackageInfo
-//    jobject packageInfo = (*env)->CallObjectMethod(env, packageManager,
-//                                                   methodID_pm, application_package, 64);
-//
-//    jclass packageinfo_clazz = (*env)->GetObjectClass(env, packageInfo);
-//    jfieldID fieldID_signatures = (*env)->GetFieldID(env, packageinfo_clazz,
-//                                                     "signatures", "[Landroid/content/pm/Signature;");
-//    jobjectArray signature_arr = (jobjectArray)(*env)->GetObjectField(env,
-//                                                                      packageInfo, fieldID_signatures);
-//    // Signature数组中取出第一个元素
-//    jobject signature = (*env)->GetObjectArrayElement(env, signature_arr, 0);
-//    // 读signature的hashcode
-//    jclass signature_clazz = (*env)->GetObjectClass(env, signature);
-//    jmethodID methodID_hashcode = (*env)->GetMethodID(env, signature_clazz,
-//                                                      "hashCode", "()I");
-//    jint hashCode = (*env)->CallIntMethod(env, signature, methodID_hashcode);
-//    // 读signature的byte array
-//    jmethodID methodID_toByteArray = (*env)->GetMethodID(env, signature_clazz,
-//                                                         "toByteArray", "()[B");
-//    jbyteArray byteArray = (*env)->CallObjectMethod(env, signature, methodID_toByteArray);
-//    jsize len = (*env)->GetArrayLength(env, byteArray); // 获取长度
-//    jbyte* bap = (*env)->GetByteArrayElements(env, byteArray, JNI_FALSE); // jbyteArray转为jbyte*
-//    char* rtn = NULL;
-//    int i=0;
-//    int result = -1;
-//    if(len > 0)
-//    {
-//        rtn = (char*)malloc(len+1); // "\0"
-//        memcpy(rtn, bap, len);
-//        rtn[len]=0;
-//        // 注：这里也可以通过回调java的MessageDigest类方法获取MD5
-//        unsigned char decrypt[16];
-//        MD5_CTX mdContext;
-//        MD5Init(&mdContext); //初始化
-//        MD5Update(&mdContext, rtn, len);
-//        MD5Final(&mdContext, decrypt);
-//        //char* char_result = (char*) malloc(16*2+1);
-//        //ByteToHexStr(decrypt, char_result, 16);
-//        //*(char_result+16*2) = '\0';// 在末尾补\0
-//        //LOGI("result:%s\n", char_result);
-//        //result = strcasecmp("111", char_result);
-//        //free(char_result);
-//    }
-//    LOGI("result hashCode = %d", hashCode);
-//    (*env)->ReleaseByteArrayElements(env, byteArray, bap, 0);  //释放掉
-//    return result;
-//
-//}
+/*
+ * Class:     com_wuba_zhuanzhuan_framework_network_volley_FileReader
+ * Method:    getPksBytes
+ * Signature: ()[B
+ */
+JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkSign
+  (JNIEnv *env, jclass clz, jobject obj){
+      if(obj == NULL){
+         return -1;
+      }
+
+      jmethodID packageManagerMethodID = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, obj),
+                                                          "getPackageManager", "()Landroid/content/pm/PackageManager;");
+      if(packageManagerMethodID == NULL){
+         return -2;
+      }
+      jobject packageManager = (*env)->CallObjectMethod(env, obj, packageManagerMethodID);
+
+      jmethodID packageNameMethodID = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, obj),
+                                                       "getPackageName", "()Ljava/lang/String;");
+      if(packageNameMethodID == NULL){
+         return -3;
+      }
+      jobject packageName = (*env)->CallObjectMethod(env, obj, packageNameMethodID);
+
+      if(packageManager == NULL){
+         return -4;
+      }
+      jmethodID packageInfoMethodID = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, packageManager),
+                                                       "getPackageInfo", "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
+      if(packageName == NULL || packageInfoMethodID == NULL){
+         return -5;
+      }
+      jobject packageInfo = (*env)->CallObjectMethod(env, packageManager, packageInfoMethodID, packageName, 64);
+
+      if(packageInfo == NULL){
+         return -6;
+      }
+      jfieldID sigMethodID = (*env)->GetFieldID(env, (*env)->GetObjectClass(env, packageInfo),
+                                             "signatures", "[Landroid/content/pm/Signature;");
+      if(sigMethodID == NULL){
+         return -6;
+      }
+      jobjectArray sig = (jobjectArray)((*env)->GetObjectField(env, packageInfo, sigMethodID));
+      if(sig == NULL){
+         return -7;
+      }
+
+      int len = (*env)->GetArrayLength(env, sig);
+      if(len <= 0){
+         return -8;
+      }
+
+      jobject firstSig = (*env)->GetObjectArrayElement(env, sig, 0);
+
+      if(firstSig == NULL){
+         return -9;
+      }
+
+      jmethodID toCharStringMethodID = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, firstSig),
+                                                        "toCharsString", "()Ljava/lang/String;");
+      jstring sigString = (jstring)(*env)->CallObjectMethod(env, firstSig, toCharStringMethodID);
+
+      if(sigString == NULL){
+         return -10;
+      }
+
+      const char rightSig[14] = {'3','0','8','2','0','2','1','d','3','0','8','2','0','1'};
+      const char *data = (*env)->GetStringUTFChars(env, sigString, 0);
+      if(data == NULL){
+         return -11;
+      }
+      LOGD("String: %s", data);
+
+      int index = 0;
+      for(;index < 14;index++){
+        if(data[index] != rightSig[index]){
+         return -12;
+        }
+      };
+
+      return 0;
+  }
 
 
 
