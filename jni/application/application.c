@@ -67,11 +67,6 @@ JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_c
 }
 
 
-/*
- * Class:     com_wuba_zhuanzhuan_framework_network_volley_FileReader
- * Method:    getPksBytes
- * Signature: ()[B
- */
 JNIEXPORT jint JNICALL Java_com_ran_ben_androidcomponentdemo_utils_NdkJniUtils_checkSign
   (JNIEnv *env, jclass clz, jobject obj){
       if(obj == NULL){
