@@ -10,5 +10,6 @@
         <item>CardSlideActivity</item>
         <item>CicrcleProgressActivity</item>
         <item>DrawableLoadingActivity</item>
+        <item>BindingActivity</item>
     </array>
 </resources>

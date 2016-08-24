@@ -35,22 +35,22 @@ public class MainActivity extends AppCompatActivity
 
         Fresco.initialize(this);
 
-        NdkJniUtils jni = new NdkJniUtils();
-
-        int result = jni.checkDexMD5(getApplicationInfo().sourceDir, "classes.dex",
-                getCacheDir().getAbsolutePath() + "/classes.dex");
-        Log.d("TAG", "onCreate: checkDexMD5 result =  " + result);
-
-        result = jni.checkSign(this);
-        Log.d("TAG", "onCreate: getPksBytes result =  " + result);
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo("com.ran.ben.androidcomponentdemo", PackageManager.GET_SIGNATURES);
-            Signature[] signatures = info.signatures;
-            Signature signature  = signatures[0];
-            Log.d("TAG", "onCreate: getPksBytes signature.toCharsString() =  " + signature.toCharsString());
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
+//        NdkJniUtils jni = new NdkJniUtils();
+//
+//        int result = jni.checkDexMD5(getApplicationInfo().sourceDir, "classes.dex",
+//                getCacheDir().getAbsolutePath() + "/classes.dex");
+//        Log.d("TAG", "onCreate: checkDexMD5 result =  " + result);
+//
+//        result = jni.checkSign(this);
+//        Log.d("TAG", "onCreate: getPksBytes result =  " + result);
+//        try {
+//            PackageInfo info = getPackageManager().getPackageInfo("com.ran.ben.androidcomponentdemo", PackageManager.GET_SIGNATURES);
+//            Signature[] signatures = info.signatures;
+//            Signature signature  = signatures[0];
+//            Log.d("TAG", "onCreate: getPksBytes signature.toCharsString() =  " + signature.toCharsString());
+//        } catch (PackageManager.NameNotFoundException e) {
+//            e.printStackTrace();
+//        }
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
