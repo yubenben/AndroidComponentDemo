@@ -57,7 +57,16 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.DrawableLoadingActivity" />
         <activity android:name=".activity.BindingActivity" />
-        <service android:name=".service.LocalService" />
+
+        <service android:name=".service.LocalService"
+            />
+        <service
+            android:name=".service.MessengerService"
+            android:enabled="true"
+            android:process=":message"
+            android:exported="true" />
+
+        <activity android:name=".activity.MessengerActivity"></activity>
     </application>
 
 </manifest>

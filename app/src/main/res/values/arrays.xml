@@ -11,5 +11,6 @@
         <item>CicrcleProgressActivity</item>
         <item>DrawableLoadingActivity</item>
         <item>BindingActivity</item>
+        <item>MessengerActivity</item>
     </array>
 </resources>
