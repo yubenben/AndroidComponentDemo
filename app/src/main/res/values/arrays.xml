@@ -12,5 +12,6 @@
         <item>DrawableLoadingActivity</item>
         <item>BindingActivity</item>
         <item>MessengerActivity</item>
+        <item>Binding</item>
     </array>
 </resources>

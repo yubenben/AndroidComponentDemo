@@ -4,6 +4,13 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="remote_service_started">Remote service has started</string>
+    <string name="remote_service_stopped">Remote service has stopped</string>
+    <string name="remote_service_label">Sample Remote Service</string>
+    <string name="remote_service_connected">Connected to remote service</string>
+    <string name="remote_service_disconnected">Disconnected from remote service</string>
+    <string name="remote_service_unbind_disconn">Unbinding due to disconnect</string>
+
     <string name="action_settings">Settings</string>
     <string name="current_mplitude">修改中等振幅，当前%1$s</string>
     <string name="current_Disparity">修改振幅差距，当前%1$s</string>

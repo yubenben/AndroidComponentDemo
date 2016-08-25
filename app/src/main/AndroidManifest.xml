@@ -58,15 +58,22 @@
         <activity android:name=".activity.DrawableLoadingActivity" />
         <activity android:name=".activity.BindingActivity" />
 
-        <service android:name=".service.LocalService"
-            />
+        <service android:name=".service.LocalService" />
         <service
             android:name=".service.MessengerService"
             android:enabled="true"
-            android:process=":message"
-            android:exported="true" />
+            android:exported="true"
+            android:process=":message" />
 
-        <activity android:name=".activity.MessengerActivity"></activity>
+        <activity android:name=".activity.MessengerActivity" />
+
+        <service
+            android:name=".service.RemoteService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":remote" />
+
+        <activity android:name=".activity.Binding"></activity>
     </application>
 
 </manifest>
