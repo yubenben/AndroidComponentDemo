@@ -38,7 +38,7 @@ public class CoasterCircleProgressActivity extends AppCompatActivity {
 
         SimpleDraweeView mImage3 = (SimpleDraweeView) findViewById(R.id.image3);
         mImage3.setImageURI(
-                Uri.parse("http://b.hiphotos.baidu.com/image/h%3D300/sign=592f8030ac18972bbc3a06cad6cd7b9d/267f9e2f0708283896096030bf99a9014c08f18a.jpg"));
+                Uri.parse("res://com.ran.ben.androidcomponentdemo/"+R.drawable.ic_loading_caster));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

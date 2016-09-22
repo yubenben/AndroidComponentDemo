@@ -11,13 +11,20 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
-import android.graphics.RectF;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
+import android.view.animation.RotateAnimation;
+import android.view.animation.ScaleAnimation;
 import android.widget.RelativeLayout;
 
+import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
 
 import java.util.ArrayList;
@@ -36,6 +43,7 @@ public class ProgressCoasterView extends RelativeLayout {
     private Bitmap bitmapArc1;
     private Bitmap bitmapArc2;
     private Bitmap bitmapArc3;
+    private Bitmap bitmapCircle;
     //从外到内的三个圆弧的半径（和View宽度的百分比）
     private float arcR1 = 0.75f;
     private float arcR2 = 0.7f;
@@ -47,10 +55,8 @@ public class ProgressCoasterView extends RelativeLayout {
     //圆弧的宽度
     private float arcZ = 30;
     private float arcZa = 0.04f;
-    //旋转的角度
-    private float rotateAngle = 0;
     //旋转速度
-    private float rotateSpeed = 4.0f;
+    private static float ROTATE_SPEED = 1.0f;
 
     private boolean initFinish = false;
 
@@ -94,6 +100,14 @@ public class ProgressCoasterView extends RelativeLayout {
             params.height = (int) (getHeight() * arcR3 - (arcZ) * 3);
             //Log.d("TAG", "init: params.width=" + params.width + " params.height=" + params.height);
             requestLayout();
+
+            RotateAnimation mRotateAnimation =
+                    new RotateAnimation(0, 360, Animation.ABSOLUTE, (getWidth() * arcR3 - (arcZ) * 3) /2,
+                            Animation.ABSOLUTE, (getWidth() * arcR3 - (arcZ) * 3) / 2);
+            mRotateAnimation.setInterpolator(new LinearInterpolator());
+            mRotateAnimation.setDuration(1000);
+            mRotateAnimation.setRepeatCount(Animation.INFINITE);
+            view.setAnimation(mRotateAnimation);
         }
 
         cViewList.clear();
@@ -165,99 +179,130 @@ public class ProgressCoasterView extends RelativeLayout {
             requestLayout();
         }
 
-        if (bitmapArc1 == null) {
-            float width = canvas.getWidth() * arcR1;
-            float height = canvas.getHeight() * arcR1;
-            float stokeW = dpToPx(2);
-            bitmapArc1 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
-            Canvas temp = new Canvas(bitmapArc1);
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.STROKE); //设置空心
-            paint.setStrokeWidth(dpToPx(2)); //设置圆环的宽度
-            paint.setAntiAlias(true);  //消除锯齿
-            paint.setColor(backgroundColorGray);
-            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-                    0, 360, false, paint);
-            paint.setColor(backgroundColorPrimy);
-            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-                    arcStart, arcEnd * 2, false, paint);
-        }
-
-        if (bitmapArc2 == null) {
-            float width = canvas.getWidth() * arcR2;
-            float height = canvas.getHeight() * arcR2;
-            float stokeW = arcZ;
-            bitmapArc2 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
-            Canvas temp = new Canvas(bitmapArc2);
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.STROKE); //设置空心
-            paint.setStrokeWidth(arcZ); //设置圆环的宽度
-            paint.setAntiAlias(true);  //消除锯齿
-            paint.setColor(backgroundColorGray);
-            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-                    0, 360, false, paint);
-            paint.setColor(backgroundColor);
-            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-                    arcStart, arcEnd, false, paint);
-        }
-
-        if (bitmapArc3 == null) {
-            float width = canvas.getWidth() * arcR3;
-            float height = canvas.getHeight() * arcR3;
-            float stokeW = arcZ;
-            bitmapArc3 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
-            Canvas temp = new Canvas(bitmapArc3);
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.STROKE); //设置空心
-            paint.setStrokeWidth(arcZ); //设置圆环的宽度
-            paint.setAntiAlias(true);  //消除锯齿
-            paint.setColor(backgroundColorGray);
-            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-                    0, 360, false, paint);
-            paint.setColor(backgroundColor);
-            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-                    arcStart, arcEnd, false, paint);
-        }
-
-
-        input += rotateSpeed;
-        input = input % 360;
-        rotateAngle = getInterpolation(input / 360) * 360;
+//        if (bitmapArc1 == null) {
+//            float width = canvas.getWidth() * arcR1;
+//            float height = canvas.getHeight() * arcR1;
+//            float stokeW = dpToPx(2);
+//            bitmapArc1 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
+//            Canvas temp = new Canvas(bitmapArc1);
+//            Paint paint = new Paint();
+//            paint.setStyle(Paint.Style.STROKE); //设置空心
+//            paint.setStrokeWidth(dpToPx(2)); //设置圆环的宽度
+//            paint.setAntiAlias(true);  //消除锯齿
+//            paint.setColor(backgroundColorGray);
+//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+//                    0, 360, false, paint);
+//            paint.setColor(backgroundColorPrimy);
+//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+//                    arcStart, arcEnd * 2, false, paint);
+//        }
+//
+//        if (bitmapArc2 == null) {
+//            float width = canvas.getWidth() * arcR2;
+//            float height = canvas.getHeight() * arcR2;
+//            float stokeW = arcZ;
+//            bitmapArc2 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
+//            Canvas temp = new Canvas(bitmapArc2);
+//            Paint paint = new Paint();
+//            paint.setStyle(Paint.Style.STROKE); //设置空心
+//            paint.setStrokeWidth(arcZ); //设置圆环的宽度
+//            paint.setAntiAlias(true);  //消除锯齿
+//            paint.setColor(backgroundColorGray);
+//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+//                    0, 360, false, paint);
+//            paint.setColor(backgroundColor);
+//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+//                    arcStart, arcEnd, false, paint);
+//        }
+//
+//        if (bitmapArc3 == null) {
+//            float width = canvas.getWidth() * arcR3;
+//            float height = canvas.getHeight() * arcR3;
+//            float stokeW = arcZ;
+//            bitmapArc3 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
+//            Canvas temp = new Canvas(bitmapArc3);
+//            Paint paint = new Paint();
+//            paint.setStyle(Paint.Style.STROKE); //设置空心
+//            paint.setStrokeWidth(arcZ); //设置圆环的宽度
+//            paint.setAntiAlias(true);  //消除锯齿
+//            paint.setColor(backgroundColorGray);
+//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+//                    0, 360, false, paint);
+//            paint.setColor(backgroundColor);
+//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
+//                    arcStart, arcEnd, false, paint);
+//        }
+//
+//
+//        input += ROTATE_SPEED;
+//        input = input % 360;
+//        rotateAngle = getInterpolation(input / 360) * 360;
         //Log.d("progress", "drawFrame: input1= "+ input / 360 + " rotation="+ rotateAngle / 360 + "    input= "+ input + " rotation="+ rotateAngle);
 
-        Paint bpPaint = new Paint();
-        bpPaint.setAntiAlias(true);
-        if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
-            canvas.save();
-            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-            canvas.drawBitmap(bitmapArc1, getWidth() * (1 - arcR1) / 2,
-                    getHeight() * (1 - arcR1) / 2, bpPaint);
-            canvas.restore();
-        }
+//        Paint bpPaint = new Paint();
+//        bpPaint.setAntiAlias(true);
+//        if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
+//            canvas.save();
+//            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
+//            canvas.drawBitmap(bitmapArc1, getWidth() * (1 - arcR1) / 2,
+//                    getHeight() * (1 - arcR1) / 2, bpPaint);
+//            canvas.restore();
+//        }
+//
+//        if (bitmapArc2 != null && !bitmapArc2.isRecycled()) {
+//            canvas.save();
+//            canvas.rotate(rotateAngle, getWidth() / 2, getHeight() / 2);
+//            canvas.drawBitmap(bitmapArc2, getWidth() * (1 - arcR2) / 2,
+//                    getHeight() * (1 - arcR2) / 2, bpPaint);
+//            canvas.restore();
+//        }
+//
+//        if (bitmapArc3 != null && !bitmapArc3.isRecycled()) {
+//            canvas.save();
+//            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
+//            canvas.drawBitmap(bitmapArc3, getWidth() * (1 - arcR3) / 2,
+//                    getWidth() * (1 - arcR3) / 2, bpPaint);
+//            canvas.restore();
+//        }
 
-        if (bitmapArc2 != null && !bitmapArc2.isRecycled()) {
-            canvas.save();
-            canvas.rotate(rotateAngle, getWidth() / 2, getHeight() / 2);
-            canvas.drawBitmap(bitmapArc2, getWidth() * (1 - arcR2) / 2,
-                    getHeight() * (1 - arcR2) / 2, bpPaint);
-            canvas.restore();
-        }
+        input += ROTATE_SPEED;
+        input = input % 360;
+        float rotateAngle = getInterpolation(input / 360);
 
-        if (bitmapArc3 != null && !bitmapArc3.isRecycled()) {
-            canvas.save();
-            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-            canvas.drawBitmap(bitmapArc3, getWidth() * (1 - arcR3) / 2,
-                    getWidth() * (1 - arcR3) / 2, bpPaint);
-            canvas.restore();
-        }
+        float input2 = (input + 180) % 360;
+        float rotateAngle2 = getInterpolation(input2 / 360);
 
-//        Paint tmpPaint = new Paint();
-//        tmpPaint.setAntiAlias(true);
-//        tmpPaint.setColor(getResources().getColor(android.R.color.holo_blue_bright));
-//        canvas.drawPath(orbit, tmpPaint);
+        drawCircle(canvas, rotateAngle);
+        drawCircle(canvas, rotateAngle2);
+    }
+
+    static Bitmap drawableToBitmap(Drawable drawable) // drawable 转换成bitmap
+    {
+        int width = drawable.getIntrinsicWidth();// 取drawable的长宽
+        int height = drawable.getIntrinsicHeight();
+        Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE
+                ? Bitmap.Config.ARGB_8888:Bitmap.Config.RGB_565;// 取drawable的颜色格式
+        Bitmap bitmap = Bitmap.createBitmap(width, height, config);// 建立对应bitmap
+        Canvas canvas = new Canvas(bitmap);// 建立对应bitmap的画布
+        drawable.setBounds(0, 0, width, height);
+        drawable.draw(canvas);// 把drawable内容画到画布中
+        return bitmap;
+    }
+
+    private void drawCircle(Canvas canvas, float time) {
+        float width = canvas.getWidth();
+        float radius = (time) * (width / 2);
+        Log.d("ben", "draw: time =  " + time + "  radius = " + radius);
+        Paint paint = new Paint();
+        paint.setStyle(Paint.Style.FILL);
+        paint.setAntiAlias(true);
+        int color = Color.argb((int) ((1 - time) * 255), 225, 112, 79);
+        paint.setColor(color);
+        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, radius, paint);
     }
 
     private float input = 0f;
+
     private float getInterpolation(float input) {
         if (input < 0.24f) {
             return input * 0.55f;

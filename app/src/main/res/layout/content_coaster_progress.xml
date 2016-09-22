@@ -30,6 +30,7 @@
                 android:layout_centerInParent="true"
                 fresco:placeholderImageScaleType="centerInside"
                 android:alpha="1"
+                android:visibility="visible"
                 fresco:roundAsCircle="true" />
 
             <com.facebook.drawee.view.SimpleDraweeView
