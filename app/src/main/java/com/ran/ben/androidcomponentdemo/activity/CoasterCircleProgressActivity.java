@@ -12,17 +12,18 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
 import com.ran.ben.androidcomponentdemo.view.ProgressBarCircular;
+import com.ran.ben.androidcomponentdemo.view.ProgressCoasterView;
 
 public class CoasterCircleProgressActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cicrcle_progress);
+        setContentView(R.layout.activity_coaster_progress);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final ProgressBarCircular progress = (ProgressBarCircular) findViewById(R.id.progress_bar);
+        final ProgressCoasterView progress = (ProgressCoasterView) findViewById(R.id.progress_bar);
         ViewGroup.LayoutParams params = progress.getLayoutParams();
         params.width  = (int) (DensityUtil.gettDisplayWidth(this));
         params.height = (int) (DensityUtil.gettDisplayWidth(this));
@@ -48,7 +49,7 @@ public class CoasterCircleProgressActivity extends AppCompatActivity {
                     progress.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            progress.showCircleView(new ProgressBarCircular.IOnShowViewEndListener() {
+                            progress.showCircleView(new ProgressCoasterView.IOnShowViewEndListener() {
                                 @Override
                                 public void onEnd() {
 

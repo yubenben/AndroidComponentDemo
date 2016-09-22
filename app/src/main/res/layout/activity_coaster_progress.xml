@@ -21,7 +21,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_cicrcle_progress" />
+    <include layout="@layout/content_coaster_progress" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
