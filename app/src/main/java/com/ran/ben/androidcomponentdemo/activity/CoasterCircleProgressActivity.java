@@ -7,14 +7,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
+import android.widget.ScrollView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
-import com.ran.ben.androidcomponentdemo.view.ProgressBarCircular;
 import com.ran.ben.androidcomponentdemo.view.ProgressCoasterView;
 
 public class CoasterCircleProgressActivity extends AppCompatActivity {
+
+    private View mContainer;
+    private ScrollView  scrollView;
+
+    private ProgressCoasterView progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +30,14 @@ public class CoasterCircleProgressActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final ProgressCoasterView progress = (ProgressCoasterView) findViewById(R.id.progress_bar);
+        mContainer  = findViewById(R.id.cost_container);
+        scrollView = (ScrollView) findViewById(R.id.cost_scrollview);
+        scrollView.setVerticalScrollBarEnabled(true);
+
+        progress = (ProgressCoasterView) findViewById(R.id.progress_bar);
         ViewGroup.LayoutParams params = progress.getLayoutParams();
-        params.width  = (int) (DensityUtil.gettDisplayWidth(this));
-        params.height = (int) (DensityUtil.gettDisplayWidth(this));
+        params.width  = (DensityUtil.gettDisplayWidth(this));
+        params.height = (DensityUtil.gettDisplayWidth(this));
 
         SimpleDraweeView mImage = (SimpleDraweeView) findViewById(R.id.image);
         mImage.setImageURI(
@@ -53,6 +64,37 @@ public class CoasterCircleProgressActivity extends AppCompatActivity {
                                 @Override
                                 public void onEnd() {
 
+                                    TranslateAnimation translateAnimation = new TranslateAnimation(0, 0
+                                            , 0, -DensityUtil.gettDisplayWidth(CoasterCircleProgressActivity.this) );
+                                    translateAnimation.setDuration(1000);
+                                    translateAnimation.setFillAfter(true);
+                                    translateAnimation.setAnimationListener(new Animation.AnimationListener() {
+                                        @Override
+                                        public void onAnimationStart(Animation animation) {
+
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animation animation) {
+                                            progress.setVisibility(View.INVISIBLE);
+
+                                        }
+
+                                        @Override
+                                        public void onAnimationRepeat(Animation animation) {
+
+                                        }
+                                    });
+                                    mContainer.startAnimation(translateAnimation);
+//                                    scrollView.smoothScrollBy(0, DensityUtil.gettDisplayWidth(CoasterCircleProgressActivity.this));
+
+//                                    PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("translationY"
+//                                            , 0, 0
+//                                            , 0, -DensityUtil.gettDisplayWidth(CoasterCircleProgressActivity.this));
+//                                    ObjectAnimator listObjectAnimator
+//                                            = ObjectAnimator.ofPropertyValuesHolder(progress, pvhY).setDuration(1000);
+//                                    listObjectAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+//                                    listObjectAnimator.start();
                                 }
                             });
                         }

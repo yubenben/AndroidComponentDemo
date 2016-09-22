@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cost_scrollview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -11,8 +12,11 @@
     tools:context="com.ran.ben.androidcomponentdemo.activity.CicrcleProgressActivity"
     tools:showIn="@layout/activity_cicrcle_progress">
 
-    <RelativeLayout
+    <LinearLayout
+        android:id="@+id/cost_container"
         android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -33,52 +37,125 @@
                 android:visibility="visible"
                 fresco:roundAsCircle="true" />
 
-            <com.facebook.drawee.view.SimpleDraweeView
-                android:id="@+id/image"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_centerInParent="true"
-                fresco:placeholderImageScaleType="centerInside"
-                android:alpha="1"
-                fresco:roundAsCircle="true" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
 
-            <com.facebook.drawee.view.SimpleDraweeView
-                android:id="@+id/image2"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_centerInParent="true"
-                fresco:placeholderImageScaleType="centerInside"
-                android:alpha="1"
-                fresco:roundAsCircle="true" />
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:id="@+id/image"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    fresco:placeholderImageScaleType="centerInside"
+                    android:alpha="1"
+                    fresco:roundAsCircle="true" />
 
-            <com.facebook.drawee.view.SimpleDraweeView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_centerInParent="true"
-                fresco:placeholderImageScaleType="centerInside"
-                fresco:placeholderImage="@drawable/women"
-                android:alpha="1"
-                fresco:roundAsCircle="true" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:text="服务员"/>
+            </LinearLayout>
 
 
-            <com.facebook.drawee.view.SimpleDraweeView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_centerInParent="true"
-                fresco:placeholderImageScaleType="centerInside"
-                fresco:placeholderImage="@drawable/women"
-                android:alpha="1"
-                fresco:roundAsCircle="true" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:id="@+id/image2"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    fresco:placeholderImageScaleType="centerInside"
+                    android:alpha="1"
+                    fresco:roundAsCircle="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:text="司机"/>
+            </LinearLayout>
 
 
-            <com.facebook.drawee.view.SimpleDraweeView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_centerInParent="true"
-                fresco:placeholderImageScaleType="centerInside"
-                fresco:placeholderImage="@drawable/women"
-                android:alpha="1"
-                fresco:roundAsCircle="true" />
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    fresco:placeholderImageScaleType="centerInside"
+                    fresco:placeholderImage="@drawable/women"
+                    android:alpha="1"
+                    fresco:roundAsCircle="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:text="前台"/>
+            </LinearLayout>
+
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    fresco:placeholderImageScaleType="centerInside"
+                    fresco:placeholderImage="@drawable/women"
+                    android:alpha="1"
+                    fresco:roundAsCircle="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:text="销售"/>
+            </LinearLayout>
+
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    fresco:placeholderImageScaleType="centerInside"
+                    fresco:placeholderImage="@drawable/women"
+                    android:alpha="1"
+                    fresco:roundAsCircle="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:text="服务员"/>
+            </LinearLayout>
+
 
             <com.facebook.drawee.view.SimpleDraweeView
                 android:layout_width="50dp"
@@ -130,5 +207,122 @@
 
         </com.ran.ben.androidcomponentdemo.view.ProgressCoasterView>
 
-    </RelativeLayout>
-</RelativeLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:id="@+id/first_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+                <LinearLayout
+                    android:id="@+id/job_seeker_num_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="55dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/num_left_icon"
+                        android:layout_gravity="start"/>
+
+                    <TextView
+                        android:id="@+id/job_seeker_num_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:textSize="24dp"
+                        android:textStyle="bold"
+                        android:textColor="#ff704f"
+                        android:text="345"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/num_right_icon"
+                        android:layout_gravity="end"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/job_seeker_num_tip_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/job_seeker_num_layout"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="11dp"
+                    android:textColor="#ffa38e"
+                    android:textSize="13dp"
+                    android:text="优质求职者数量(个)"/>
+                <TextView
+                    android:id="@+id/job_seeker_num_tip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/job_seeker_num_tip_tv"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="15dp"
+                    android:textSize="14dp"
+                    android:textColor="#9f9f9f"
+                    android:text="总有您的菜，您要招的是？"/>
+
+                <TextView
+                    android:id="@+id/job_edit_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_below="@id/job_seeker_num_tip"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="15dp"
+                    android:drawablePadding="10dp"
+                    android:drawableLeft="@drawable/ic_search"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:background="#f6f6f6"
+                    android:textSize="15dp"
+                    android:textColorHint="#bbbbbb"
+                    android:hint="请输入职位名称"/>
+
+                <TextView
+                    android:id="@+id/hot_jobs_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@id/job_edit_tv"
+                    android:layout_marginTop="35dp"
+                    android:layout_marginBottom="20dp"
+                    android:textColor="#9f9f9f"
+                    android:textSize="12dp"
+                    android:text="热门职位"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/cutting_letf_line"
+                    android:layout_alignTop="@id/hot_jobs_text"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_toLeftOf="@id/hot_jobs_text"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/cutting_right_line"
+                    android:layout_alignTop="@id/hot_jobs_text"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@id/hot_jobs_text"/>
+
+            </RelativeLayout>
+
+
+        </FrameLayout>
+    </LinearLayout>
+</ScrollView>

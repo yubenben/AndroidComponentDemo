@@ -5,26 +5,20 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
-import android.graphics.PixelFormat;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.RotateAnimation;
-import android.view.animation.ScaleAnimation;
 import android.widget.RelativeLayout;
 
-import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
 
 import java.util.ArrayList;
@@ -36,32 +30,29 @@ public class ProgressCoasterView extends RelativeLayout {
 
     final static String ANDROID_XML = "http://schemas.android.com/apk/res/android";
     int backgroundColor = Color.parseColor("#FFFD6859");
-    int backgroundColorPrimy = Color.parseColor("#FFFDADA3");
-    int backgroundColorGray = Color.parseColor("#FFF3F3F3");
 
-    //从外到内的三个圆弧的bitmap
-    private Bitmap bitmapArc1;
-    private Bitmap bitmapArc2;
-    private Bitmap bitmapArc3;
-    private Bitmap bitmapCircle;
-    //从外到内的三个圆弧的半径（和View宽度的百分比）
-    private float arcR1 = 0.75f;
-    private float arcR2 = 0.7f;
-    private float arcR3 = 0.34f;
-    //圆弧的长度起点
-    private int arcStart = -135;
-    //圆弧的长度终点
-    private int arcEnd = 90;
-    //圆弧的宽度
-    private float arcZ = 30;
-    private float arcZa = 0.04f;
+    //大圆半径
+    private float mCircle2Radius;
+    //里面雷达半径
+    private float mInnerRadius = 130;
+    final static float INNER_RADIUS_PERCENT = 0.3f;
+
+    //四周小头像半径
+    private float miniCircleRadius = 30;
+    final static float MINI_RADIUS_PERCENT = 0.08f;
     //旋转速度
-    private static float ROTATE_SPEED = 1.0f;
+    final static float ROTATE_SPEED = 1.0f;
 
     private boolean initFinish = false;
 
+    private Paint mPaint;
+
+    private float input = 0f;
+    private float input2 = -50f;
+
     //在圆周排放的imageView的轨迹坐标
     private PathMeasure pathMeasure;
+    private Path orbit;
     //在圆周排放的imageView
     private ArrayList<View> cViewList = new ArrayList<View>();
 
@@ -88,22 +79,24 @@ public class ProgressCoasterView extends RelativeLayout {
     }
 
     private void init() {
-        arcZ = getWidth() * arcZa;
-        if (arcZ < dpToPx(5)) {
-            arcZ = dpToPx(5);
+        mCircle2Radius = getWidth()  <  getHeight() ? getWidth() / 2 : getHeight() / 2;
+        mInnerRadius = mCircle2Radius * INNER_RADIUS_PERCENT;
+        miniCircleRadius = mCircle2Radius * MINI_RADIUS_PERCENT;
+        if (mInnerRadius < dpToPx(5)) {
+            mInnerRadius = dpToPx(5);
         }
         if (getChildCount() >= 1) {
             View view = getChildAt(0);
             ViewGroup.LayoutParams params = view.getLayoutParams();
             //Log.d("TAG", "init: params.width=" + params.width + " params.height=" + params.height);
-            params.width = (int) (getWidth() * arcR3 - (arcZ) * 3);
-            params.height = (int) (getHeight() * arcR3 - (arcZ) * 3);
+            params.width = (int) (mInnerRadius * 2);
+            params.height = (int) (mInnerRadius * 2);
             //Log.d("TAG", "init: params.width=" + params.width + " params.height=" + params.height);
             requestLayout();
 
             RotateAnimation mRotateAnimation =
-                    new RotateAnimation(0, 360, Animation.ABSOLUTE, (getWidth() * arcR3 - (arcZ) * 3) /2,
-                            Animation.ABSOLUTE, (getWidth() * arcR3 - (arcZ) * 3) / 2);
+                    new RotateAnimation(0, 360, Animation.ABSOLUTE, mInnerRadius,
+                            Animation.ABSOLUTE, mInnerRadius);
             mRotateAnimation.setInterpolator(new LinearInterpolator());
             mRotateAnimation.setDuration(1000);
             mRotateAnimation.setRepeatCount(Animation.INFINITE);
@@ -129,8 +122,6 @@ public class ProgressCoasterView extends RelativeLayout {
         }
     }
 
-    Path orbit;
-
     /**
      * Draw animation of view
      *
@@ -144,9 +135,9 @@ public class ProgressCoasterView extends RelativeLayout {
         }
         if (pathMeasure == null) {
             orbit = new Path();
-            orbit.addCircle(canvas.getWidth() / 2,
-                    canvas.getHeight() / 2,
-                    canvas.getWidth() / 2 * arcR2,
+            orbit.addCircle(mCircle2Radius,
+                    mCircle2Radius,
+                    mCircle2Radius * 0.7f,
                     Path.Direction.CW);
 
             pathMeasure = new PathMeasure(orbit, false);
@@ -155,16 +146,16 @@ public class ProgressCoasterView extends RelativeLayout {
             int start = Math.abs(random.nextInt() % (int) pathMeasure.getLength());
             int position = 0, i = 0;
             for (View view : cViewList) {
-                if (position < pathMeasure.getLength() - (arcZ * 3.6f)) {
+                if (position < pathMeasure.getLength() - (miniCircleRadius * 3.6f)) {
                     float[] coords = new float[]{0f, 0f};
                     pathMeasure.getPosTan((start + position) % (int) pathMeasure.getLength(),
                             coords, null);
 
-                    view.setX((int) coords[0] - (arcZ * 3.6f) / 2 + i * dpToPx(5));
-                    view.setY((int) coords[1] - (arcZ * 3.6f) / 2 + i * dpToPx(5));
-                    ViewGroup.LayoutParams params = view.getLayoutParams();
-                    params.width = (int) (arcZ * 3.6f);
-                    params.height = (int) (arcZ * 3.6f);
+                    view.setX((int) coords[0] - (miniCircleRadius * 3.6f) / 2 + i * dpToPx(5));
+                    view.setY((int) coords[1] - (miniCircleRadius * 3.6f) / 2 + i * dpToPx(5));
+                    //ViewGroup.LayoutParams params = view.getLayoutParams();
+                    //params.width = (int) (miniCircleRadius * 3.6f);
+                    //params.height = (int) (miniCircleRadius * 3.6f);
                     //Log.d("TAG", "init: params.width=" + params.width + " params.height=" + params.height);
                 } else {
                     ViewGroup.LayoutParams params = view.getLayoutParams();
@@ -172,146 +163,35 @@ public class ProgressCoasterView extends RelativeLayout {
                     params.height = 0;
                 }
 
-                position += (arcZ * 3.6f) * 3;
+                position += (miniCircleRadius * 3.6f) * 3;
                 i++;
                 i = i > 3 ? 0 : i;
             }
             requestLayout();
         }
-
-//        if (bitmapArc1 == null) {
-//            float width = canvas.getWidth() * arcR1;
-//            float height = canvas.getHeight() * arcR1;
-//            float stokeW = dpToPx(2);
-//            bitmapArc1 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
-//            Canvas temp = new Canvas(bitmapArc1);
-//            Paint paint = new Paint();
-//            paint.setStyle(Paint.Style.STROKE); //设置空心
-//            paint.setStrokeWidth(dpToPx(2)); //设置圆环的宽度
-//            paint.setAntiAlias(true);  //消除锯齿
-//            paint.setColor(backgroundColorGray);
-//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-//                    0, 360, false, paint);
-//            paint.setColor(backgroundColorPrimy);
-//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-//                    arcStart, arcEnd * 2, false, paint);
-//        }
-//
-//        if (bitmapArc2 == null) {
-//            float width = canvas.getWidth() * arcR2;
-//            float height = canvas.getHeight() * arcR2;
-//            float stokeW = arcZ;
-//            bitmapArc2 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
-//            Canvas temp = new Canvas(bitmapArc2);
-//            Paint paint = new Paint();
-//            paint.setStyle(Paint.Style.STROKE); //设置空心
-//            paint.setStrokeWidth(arcZ); //设置圆环的宽度
-//            paint.setAntiAlias(true);  //消除锯齿
-//            paint.setColor(backgroundColorGray);
-//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-//                    0, 360, false, paint);
-//            paint.setColor(backgroundColor);
-//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-//                    arcStart, arcEnd, false, paint);
-//        }
-//
-//        if (bitmapArc3 == null) {
-//            float width = canvas.getWidth() * arcR3;
-//            float height = canvas.getHeight() * arcR3;
-//            float stokeW = arcZ;
-//            bitmapArc3 = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
-//            Canvas temp = new Canvas(bitmapArc3);
-//            Paint paint = new Paint();
-//            paint.setStyle(Paint.Style.STROKE); //设置空心
-//            paint.setStrokeWidth(arcZ); //设置圆环的宽度
-//            paint.setAntiAlias(true);  //消除锯齿
-//            paint.setColor(backgroundColorGray);
-//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-//                    0, 360, false, paint);
-//            paint.setColor(backgroundColor);
-//            temp.drawArc(new RectF(stokeW, stokeW, width - stokeW, height - stokeW),
-//                    arcStart, arcEnd, false, paint);
-//        }
-//
-//
-//        input += ROTATE_SPEED;
-//        input = input % 360;
-//        rotateAngle = getInterpolation(input / 360) * 360;
-        //Log.d("progress", "drawFrame: input1= "+ input / 360 + " rotation="+ rotateAngle / 360 + "    input= "+ input + " rotation="+ rotateAngle);
-
-//        Paint bpPaint = new Paint();
-//        bpPaint.setAntiAlias(true);
-//        if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
-//            canvas.save();
-//            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-//            canvas.drawBitmap(bitmapArc1, getWidth() * (1 - arcR1) / 2,
-//                    getHeight() * (1 - arcR1) / 2, bpPaint);
-//            canvas.restore();
-//        }
-//
-//        if (bitmapArc2 != null && !bitmapArc2.isRecycled()) {
-//            canvas.save();
-//            canvas.rotate(rotateAngle, getWidth() / 2, getHeight() / 2);
-//            canvas.drawBitmap(bitmapArc2, getWidth() * (1 - arcR2) / 2,
-//                    getHeight() * (1 - arcR2) / 2, bpPaint);
-//            canvas.restore();
-//        }
-//
-//        if (bitmapArc3 != null && !bitmapArc3.isRecycled()) {
-//            canvas.save();
-//            canvas.rotate(-rotateAngle, getWidth() / 2, getHeight() / 2);
-//            canvas.drawBitmap(bitmapArc3, getWidth() * (1 - arcR3) / 2,
-//                    getWidth() * (1 - arcR3) / 2, bpPaint);
-//            canvas.restore();
-//        }
+        if (mPaint == null) {
+            mPaint = new Paint();
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setAntiAlias(true);
+        }
 
         input += ROTATE_SPEED;
-        input = input % 360;
-        float rotateAngle = getInterpolation(input / 360);
+        input = input > 100 ? (input - 100) :  input;
+        float rotateAngle = (input / 100);
 
-        float input2 = (input + 180) % 360;
-        float rotateAngle2 = getInterpolation(input2 / 360);
+        input2 += ROTATE_SPEED;
+        input2 = input2 > 100 ? (input2 - 100) : input2;
+        float rotateAngle2 = input2 > 0 ? (input2 / 100) :  0;
 
-        drawCircle(canvas, rotateAngle);
-        drawCircle(canvas, rotateAngle2);
+        drawCircle(canvas, rotateAngle, mPaint);
+        drawCircle(canvas, rotateAngle2, mPaint);
     }
 
-    static Bitmap drawableToBitmap(Drawable drawable) // drawable 转换成bitmap
-    {
-        int width = drawable.getIntrinsicWidth();// 取drawable的长宽
-        int height = drawable.getIntrinsicHeight();
-        Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE
-                ? Bitmap.Config.ARGB_8888:Bitmap.Config.RGB_565;// 取drawable的颜色格式
-        Bitmap bitmap = Bitmap.createBitmap(width, height, config);// 建立对应bitmap
-        Canvas canvas = new Canvas(bitmap);// 建立对应bitmap的画布
-        drawable.setBounds(0, 0, width, height);
-        drawable.draw(canvas);// 把drawable内容画到画布中
-        return bitmap;
-    }
-
-    private void drawCircle(Canvas canvas, float time) {
-        float width = canvas.getWidth();
-        float radius = (time) * (width / 2);
-        Log.d("ben", "draw: time =  " + time + "  radius = " + radius);
-        Paint paint = new Paint();
-        paint.setStyle(Paint.Style.FILL);
-        paint.setAntiAlias(true);
-        int color = Color.argb((int) ((1 - time) * 255), 225, 112, 79);
-        paint.setColor(color);
-        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, radius, paint);
-    }
-
-    private float input = 0f;
-
-    private float getInterpolation(float input) {
-        if (input < 0.24f) {
-            return input * 0.55f;
-        } else if (input > 0.76f) {
-            return (input - 0.76f) * 0.55f + (float) (Math.cos((0.76f + 1) * Math.PI) / 2.0f) + 0.5f;
-        } else {
-            return (float) (Math.cos((input + 1) * Math.PI) / 2.0f) + 0.5f;
-        }
-        //return (float) (Math.cos((input + 1) * Math.PI) / 2.0f) + 0.5f;
+    private void drawCircle(Canvas canvas, float time , Paint paint) {
+        float radius = (time) * ((mCircle2Radius - mInnerRadius))  + mInnerRadius;
+        //Log.d("ben", "draw: time =  " + time + "  radius = " + radius);
+        paint.setColor(Color.argb((int) ((1 - time) * 155), 225, 112, 79));
+        canvas.drawCircle(mCircle2Radius, mCircle2Radius, radius, paint);
     }
 
     public void setBackgroundColor(int color) {
@@ -324,21 +204,6 @@ public class ProgressCoasterView extends RelativeLayout {
         super.setVisibility(visibility);
         if (visibility != VISIBLE) {
             try {
-                if (bitmapArc1 != null && !bitmapArc1.isRecycled()) {
-                    bitmapArc1.recycle();
-                    bitmapArc1 = null;
-                }
-
-                if (bitmapArc2 != null && !bitmapArc2.isRecycled()) {
-                    bitmapArc2.recycle();
-                    bitmapArc2 = null;
-                }
-
-                if (bitmapArc3 != null && !bitmapArc3.isRecycled()) {
-                    bitmapArc3.recycle();
-                    bitmapArc3 = null;
-                }
-
                 if (pathMeasure != null) {
                     pathMeasure = null;
                 }
