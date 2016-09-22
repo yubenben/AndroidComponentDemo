@@ -55,6 +55,10 @@
             android:name=".activity.CicrcleProgressActivity"
             android:label="@string/title_activity_cicrcle_progress"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.CoasterCircleProgressActivity"
+            android:label="@string/title_activity_cicrcle_progress"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.DrawableLoadingActivity" />
         <activity android:name=".activity.BindingActivity" />
 

@@ -13,5 +13,6 @@
         <item>BindingActivity</item>
         <item>MessengerActivity</item>
         <item>Binding</item>
+        <item>CoasterCircleProgressActivity</item>
     </array>
 </resources>
