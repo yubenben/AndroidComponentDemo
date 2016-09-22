@@ -1,20 +1,27 @@
 package com.ran.ben.androidcomponentdemo.activity;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.ran.ben.androidcomponentdemo.R;
 import com.ran.ben.androidcomponentdemo.utils.DensityUtil;
 import com.ran.ben.androidcomponentdemo.view.ProgressCoasterView;
+
+import java.util.Random;
 
 public class CoasterCircleProgressActivity extends AppCompatActivity {
 
@@ -33,6 +40,8 @@ public class CoasterCircleProgressActivity extends AppCompatActivity {
         mContainer  = findViewById(R.id.cost_container);
         scrollView = (ScrollView) findViewById(R.id.cost_scrollview);
         scrollView.setVerticalScrollBarEnabled(true);
+
+        final TextView textView = (TextView)  findViewById(R.id.job_seeker_num_tv);
 
         progress = (ProgressCoasterView) findViewById(R.id.progress_bar);
         ViewGroup.LayoutParams params = progress.getLayoutParams();
@@ -60,10 +69,22 @@ public class CoasterCircleProgressActivity extends AppCompatActivity {
                     progress.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            final ValueAnimator animator = ValueAnimator.ofInt(0, 10);
+                            animator.setRepeatCount(ValueAnimator.INFINITE);
+                            animator.setInterpolator(new LinearInterpolator());
+                            animator.setDuration(1000);
+                            final  Random random = new Random();
+                            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                @Override
+                                public void onAnimationUpdate(ValueAnimator animation) {
+                                    textView.setText(String.valueOf(random.nextInt(80000) + 10000));
+                                }
+                            });
+                            animator.start();
                             progress.showCircleView(new ProgressCoasterView.IOnShowViewEndListener() {
                                 @Override
                                 public void onEnd() {
-
+                                    animator.cancel();
                                     TranslateAnimation translateAnimation = new TranslateAnimation(0, 0
                                             , 0, -DensityUtil.gettDisplayWidth(CoasterCircleProgressActivity.this) );
                                     translateAnimation.setDuration(1000);
@@ -86,15 +107,6 @@ public class CoasterCircleProgressActivity extends AppCompatActivity {
                                         }
                                     });
                                     mContainer.startAnimation(translateAnimation);
-//                                    scrollView.smoothScrollBy(0, DensityUtil.gettDisplayWidth(CoasterCircleProgressActivity.this));
-
-//                                    PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("translationY"
-//                                            , 0, 0
-//                                            , 0, -DensityUtil.gettDisplayWidth(CoasterCircleProgressActivity.this));
-//                                    ObjectAnimator listObjectAnimator
-//                                            = ObjectAnimator.ofPropertyValuesHolder(progress, pvhY).setDuration(1000);
-//                                    listObjectAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-//                                    listObjectAnimator.start();
                                 }
                             });
                         }
