@@ -10,6 +10,7 @@ import android.view.animation.Interpolator;
 
 /**
 
+ * http://www.cnblogs.com/benhero/p/4377374.html
  * 缓动三次方曲线插值器.(基于三次方贝塞尔曲线)
 
  */
