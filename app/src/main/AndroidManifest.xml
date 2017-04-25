@@ -61,6 +61,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.DrawableLoadingActivity" />
         <activity android:name=".activity.BindingActivity" />
+        <activity android:name=".activity.MeasureLayout" android:theme="@style/android:Theme" />
 
         <service android:name=".service.LocalService" />
         <service

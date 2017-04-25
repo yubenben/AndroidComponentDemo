@@ -14,5 +14,6 @@
         <item>MessengerActivity</item>
         <item>Binding</item>
         <item>CoasterCircleProgressActivity</item>
+        <item>MeasureLayout</item>
     </array>
 </resources>
